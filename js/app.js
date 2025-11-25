@@ -36,6 +36,10 @@ const App = {
                 bottomNav.classList.add('hidden');
                 this.setupCharacterCreation();
                 break;
+            case 'questSelection':
+                html = Screens.questSelection();
+                bottomNav.classList.add('hidden');
+                break;
             case 'dashboard':
                 html = Screens.dashboard();
                 bottomNav.classList.remove('hidden');
@@ -103,50 +107,159 @@ const App = {
     
     setupCharacterCreation() {
         setTimeout(() => {
-            const colorOptions = document.querySelectorAll('.color-option');
-            const avatarPreview = document.getElementById('avatarPreview');
-            const avatar = { skinTone: '#FFD1A9', hairColor: '#8B4513', outfit: '#4A90E2' };
-            
+            // Avatar state
+            const avatarState = {
+                skinTone: '#FFD1A9',
+                hairColor: '#8B4513',
+                hairstyle: 'short',
+                clothingColor: '#4A90E2',
+                accessory: 'none'
+            };
+
+            // Get SVG elements
+            const avatarHead = document.querySelector('.avatar-head');
+            const avatarHair = document.querySelector('.avatar-hair');
+            const avatarHairGroup = document.querySelector('.avatar-hair-group');
+            const avatarBody = document.querySelector('.avatar-body');
+            const avatarAccessory = document.querySelector('.avatar-accessory');
+
+            // Update avatar visual
+            function updateAvatar() {
+                if (avatarHead) avatarHead.setAttribute('fill', avatarState.skinTone);
+                if (avatarHair) avatarHair.setAttribute('fill', avatarState.hairColor);
+                if (avatarBody) avatarBody.setAttribute('fill', avatarState.clothingColor);
+
+                // Update hairstyle
+                if (avatarHairGroup) {
+                    switch (avatarState.hairstyle) {
+                        case 'short':
+                            avatarHairGroup.innerHTML = '<ellipse cx="100" cy="70" rx="48" ry="35" fill="' + avatarState.hairColor + '" class="avatar-hair"/>';
+                            break;
+                        case 'long':
+                            avatarHairGroup.innerHTML = `
+                                <ellipse cx="100" cy="70" rx="48" ry="35" fill="${avatarState.hairColor}"/>
+                                <ellipse cx="70" cy="100" rx="15" ry="40" fill="${avatarState.hairColor}"/>
+                                <ellipse cx="130" cy="100" rx="15" ry="40" fill="${avatarState.hairColor}"/>
+                            `;
+                            break;
+                        case 'curly':
+                            avatarHairGroup.innerHTML = `
+                                <circle cx="75" cy="70" r="20" fill="${avatarState.hairColor}"/>
+                                <circle cx="100" cy="65" r="22" fill="${avatarState.hairColor}"/>
+                                <circle cx="125" cy="70" r="20" fill="${avatarState.hairColor}"/>
+                            `;
+                            break;
+                        case 'bald':
+                            avatarHairGroup.innerHTML = '';
+                            break;
+                    }
+                }
+
+                // Update accessory
+                if (avatarAccessory) {
+                    switch (avatarState.accessory) {
+                        case 'none':
+                            avatarAccessory.style.display = 'none';
+                            break;
+                        case 'hat':
+                            avatarAccessory.style.display = 'block';
+                            avatarAccessory.innerHTML = `
+                                <ellipse cx="100" cy="65" rx="35" ry="10" fill="#DC143C"/>
+                                <rect x="80" y="50" width="40" height="15" rx="5" fill="#DC143C"/>
+                                <circle cx="100" cy="48" r="4" fill="#fff"/>
+                            `;
+                            break;
+                        case 'glasses':
+                            avatarAccessory.style.display = 'block';
+                            avatarAccessory.innerHTML = `
+                                <circle cx="88" cy="95" r="12" fill="none" stroke="#2C2C2C" stroke-width="2"/>
+                                <circle cx="112" cy="95" r="12" fill="none" stroke="#2C2C2C" stroke-width="2"/>
+                                <line x1="100" y1="95" x2="100" y2="95" stroke="#2C2C2C" stroke-width="2"/>
+                            `;
+                            break;
+                        case 'headphones':
+                            avatarAccessory.style.display = 'block';
+                            avatarAccessory.innerHTML = `
+                                <path d="M 65 100 Q 65 60, 100 60 Q 135 60, 135 100" stroke="#9370DB" stroke-width="5" fill="none" stroke-linecap="round"/>
+                                <rect x="60" y="95" width="10" height="20" rx="3" fill="#9370DB"/>
+                                <rect x="130" y="95" width="10" height="20" rx="3" fill="#9370DB"/>
+                            `;
+                            break;
+                    }
+                }
+            }
+
+            // Color options
+            const colorOptions = document.querySelectorAll('.color-option-modern');
             colorOptions.forEach(option => {
                 option.addEventListener('click', () => {
                     const type = option.dataset.type;
                     const color = option.dataset.color;
-                    
+
                     // Remove selected from siblings
-                    const siblings = option.parentElement.querySelectorAll('.color-option');
+                    const siblings = option.parentElement.querySelectorAll('.color-option-modern');
                     siblings.forEach(s => s.classList.remove('selected'));
                     option.classList.add('selected');
-                    
-                    // Update avatar
-                    avatar[type] = color;
-                    
-                    // Update preview
-                    if (type === 'skinTone') {
-                        avatarPreview.style.background = color;
-                    }
+
+                    // Update state
+                    avatarState[type] = color;
+                    updateAvatar();
                 });
             });
+
+            // Hairstyle options
+            const hairstyleOptions = document.querySelectorAll('.hairstyle-option');
+            hairstyleOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const value = option.dataset.value;
+
+                    // Remove selected from siblings
+                    const siblings = option.parentElement.querySelectorAll('.hairstyle-option');
+                    siblings.forEach(s => s.classList.remove('selected'));
+                    option.classList.add('selected');
+
+                    // Update state
+                    avatarState.hairstyle = value;
+                    updateAvatar();
+                });
+            });
+
+            // Accessory options
+            const accessoryOptions = document.querySelectorAll('.accessory-option');
+            accessoryOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const value = option.dataset.value;
+
+                    // Remove selected from siblings
+                    const siblings = option.parentElement.querySelectorAll('.accessory-option');
+                    siblings.forEach(s => s.classList.remove('selected'));
+                    option.classList.add('selected');
+
+                    // Update state
+                    avatarState.accessory = value;
+                    updateAvatar();
+                });
+            });
+
+            // Store avatar state for later retrieval
+            window.currentAvatarState = avatarState;
         }, 100);
     },
     
     completeCharacterCreation() {
         const name = document.getElementById('heroName').value || 'Explorer';
-        const colorOptions = document.querySelectorAll('.color-option.selected');
-        
-        const avatar = {
+        const avatar = window.currentAvatarState || {
             skinTone: '#FFD1A9',
             hairColor: '#8B4513',
-            outfit: '#4A90E2'
+            hairstyle: 'short',
+            clothingColor: '#4A90E2',
+            accessory: 'none'
         };
-        
-        colorOptions.forEach(option => {
-            const type = option.dataset.type;
-            const color = option.dataset.color;
-            avatar[type] = color;
-        });
-        
+
         UserData.update({ name, avatar });
-        this.navigate('dashboard');
+
+        // Navigate to quest selection page instead of dashboard
+        this.navigate('questSelection');
     },
     
     showHints(questId) {
