@@ -19,12 +19,12 @@ const QUESTS = [
                 { x: 2, y: 2 },
                 { x: 3, y: 1 }
             ],
-            solution: ['forward', 'forward', 'right', 'forward', 'forward', 'left', 'forward', 'forward']
+            solution: ['right', 'right', 'right', 'right', 'down', 'down', 'down', 'down']
         },
         hints: [
-            'Try breaking the path into segments. What direction does the robot need to go first?',
-            'The robot needs to move forward twice, then turn right.',
-            'Solution: Forward, Forward, Turn Right, Forward, Forward, Turn Left, Forward, Forward'
+            'The robot needs to move from position (0, 0) to position (4, 4). What directions will get it there?',
+            'Try moving right to reach column 4, then move down to reach row 4.',
+            'Solution: Move Right 4 times, then Move Down 4 times'
         ]
     },
     {

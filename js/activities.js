@@ -28,7 +28,6 @@ const Activities = {
         const { gridSize, robotStart, goal, obstacles } = this.currentQuest.activity;
         this.currentAnswer = [];
         this.robotPosition = { ...robotStart };
-        this.robotDirection = 0; // 0=up, 1=right, 2=down, 3=left
 
         let html = `
             <div class="robot-quest-container">
@@ -67,20 +66,25 @@ const Activities = {
                 <h3 class="quest-section-title">💻 Command Blocks</h3>
                 <p class="quest-instruction">Drag icon-based commands to build your algorithm:</p>
                 <div class="command-blocks-modern">
-                    <div class="command-block-modern" draggable="true" data-command="forward" title="Move Forward">
+                    <div class="command-block-modern" draggable="true" data-command="up" title="Move Up">
                         <div class="command-icon">⬆️</div>
-                        <div class="command-label">Forward</div>
-                        <div class="command-tooltip">Move the robot one step forward</div>
+                        <div class="command-label">Move Up</div>
+                        <div class="command-tooltip">Move the robot one step up</div>
                     </div>
-                    <div class="command-block-modern" draggable="true" data-command="right" title="Turn Right">
-                        <div class="command-icon">↩️</div>
-                        <div class="command-label">Turn Right</div>
-                        <div class="command-tooltip">Rotate 90° clockwise</div>
+                    <div class="command-block-modern" draggable="true" data-command="down" title="Move Down">
+                        <div class="command-icon">⬇️</div>
+                        <div class="command-label">Move Down</div>
+                        <div class="command-tooltip">Move the robot one step down</div>
                     </div>
-                    <div class="command-block-modern" draggable="true" data-command="left" title="Turn Left">
-                        <div class="command-icon">↪️</div>
-                        <div class="command-label">Turn Left</div>
-                        <div class="command-tooltip">Rotate 90° counter-clockwise</div>
+                    <div class="command-block-modern" draggable="true" data-command="left" title="Move Left">
+                        <div class="command-icon">⬅️</div>
+                        <div class="command-label">Move Left</div>
+                        <div class="command-tooltip">Move the robot one step left</div>
+                    </div>
+                    <div class="command-block-modern" draggable="true" data-command="right" title="Move Right">
+                        <div class="command-icon">➡️</div>
+                        <div class="command-label">Move Right</div>
+                        <div class="command-tooltip">Move the robot one step right</div>
                     </div>
                 </div>
 
@@ -146,8 +150,14 @@ const Activities = {
             item.dataset.command = command;
             item.draggable = true;
 
-            const icon = command === 'forward' ? '⬆️' : command === 'right' ? '↩️' : '↪️';
-            const label = command === 'forward' ? 'Forward' : command === 'right' ? 'Turn Right' : 'Turn Left';
+            const commandMap = {
+                'up': { icon: '⬆️', label: 'Move Up' },
+                'down': { icon: '⬇️', label: 'Move Down' },
+                'left': { icon: '⬅️', label: 'Move Left' },
+                'right': { icon: '➡️', label: 'Move Right' }
+            };
+            const icon = commandMap[command]?.icon || '❓';
+            const label = commandMap[command]?.label || 'Unknown';
 
             item.innerHTML = `
                 <span class="seq-icon">${icon}</span>
@@ -225,7 +235,6 @@ const Activities = {
         // Reset robot position
         const { robotStart } = this.currentQuest.activity;
         this.robotPosition = { ...robotStart };
-        this.robotDirection = 0;
 
         // Reset robot on grid
         const allCells = document.querySelectorAll('.grid-cell');
@@ -250,7 +259,6 @@ const Activities = {
 
         const { gridSize, robotStart, goal, obstacles } = this.currentQuest.activity;
         let pos = { ...robotStart };
-        let dir = 0; // 0=up, 1=right, 2=down, 3=left
 
         // Animate each command
         let step = 0;
@@ -258,7 +266,6 @@ const Activities = {
             if (step >= this.currentAnswer.length) {
                 // Store final position
                 this.lastRobotPosition = { ...pos };
-                this.lastRobotDirection = dir;
 
                 // Check if robot reached goal
                 if (pos.x === goal.x && pos.y === goal.y) {
@@ -275,48 +282,43 @@ const Activities = {
 
             const command = this.currentAnswer[step];
 
-            if (command === 'forward') {
-                // Calculate new position based on direction
-                let newX = pos.x;
-                let newY = pos.y;
+            // Calculate new position based on command
+            let newX = pos.x;
+            let newY = pos.y;
 
-                if (dir === 0) newY -= 1; // up
-                else if (dir === 1) newX += 1; // right
-                else if (dir === 2) newY += 1; // down
-                else if (dir === 3) newX -= 1; // left
-
-                // Check boundaries
-                if (newX < 0 || newX >= gridSize.cols || newY < 0 || newY >= gridSize.rows) {
-                    this.lastRobotPosition = { ...pos };
-                    this.lastRobotDirection = dir;
-                    setTimeout(() => {
-                        this.showLastPositionInfo(pos, goal, 'wall');
-                    }, 100);
-                    return;
-                }
-
-                // Check obstacles
-                if (obstacles.some(o => o.x === newX && o.y === newY)) {
-                    this.lastRobotPosition = { ...pos };
-                    this.lastRobotDirection = dir;
-                    this.showBumpAnimation(newX, newY);
-                    setTimeout(() => {
-                        this.showLastPositionInfo(pos, goal, 'obstacle');
-                    }, 500);
-                    return;
-                }
-
-                // Move robot
-                this.animateRobotMove(pos, {x: newX, y: newY}, dir);
-                pos.x = newX;
-                pos.y = newY;
-            } else if (command === 'right') {
-                dir = (dir + 1) % 4;
-                this.animateRobotRotate(dir);
+            if (command === 'up') {
+                newY -= 1;
+            } else if (command === 'down') {
+                newY += 1;
             } else if (command === 'left') {
-                dir = (dir - 1 + 4) % 4;
-                this.animateRobotRotate(dir);
+                newX -= 1;
+            } else if (command === 'right') {
+                newX += 1;
             }
+
+            // Check boundaries
+            if (newX < 0 || newX >= gridSize.cols || newY < 0 || newY >= gridSize.rows) {
+                this.lastRobotPosition = { ...pos };
+                setTimeout(() => {
+                    this.showLastPositionInfo(pos, goal, 'wall');
+                }, 100);
+                return;
+            }
+
+            // Check obstacles
+            if (obstacles.some(o => o.x === newX && o.y === newY)) {
+                this.lastRobotPosition = { ...pos };
+                this.showBumpAnimation(newX, newY);
+                setTimeout(() => {
+                    this.showLastPositionInfo(pos, goal, 'obstacle');
+                }, 500);
+                return;
+            }
+
+            // Move robot
+            this.animateRobotMove(pos, {x: newX, y: newY});
+            pos.x = newX;
+            pos.y = newY;
 
             step++;
             setTimeout(executeStep, 600);
@@ -326,9 +328,6 @@ const Activities = {
     },
 
     showLastPositionInfo(lastPos, goal, errorType = null) {
-        const directionNames = ['Up ⬆️', 'Right ➡️', 'Down ⬇️', 'Left ⬅️'];
-        const currentDirection = directionNames[this.lastRobotDirection] || 'Unknown';
-
         // Calculate distance to goal
         const distanceX = Math.abs(goal.x - lastPos.x);
         const distanceY = Math.abs(goal.y - lastPos.y);
@@ -344,7 +343,6 @@ const Activities = {
         }
 
         message += `📍 Last Position: (${lastPos.x}, ${lastPos.y})\n`;
-        message += `🧭 Facing: ${currentDirection}\n`;
         message += `🎯 Goal Position: (${goal.x}, ${goal.y})\n`;
         message += `📏 Distance to Goal: ${totalDistance} steps\n\n`;
 
@@ -360,7 +358,7 @@ const Activities = {
         alert(message);
     },
 
-    animateRobotMove(from, to, direction) {
+    animateRobotMove(from, to) {
         const fromCell = document.querySelector(`[data-x="${from.x}"][data-y="${from.y}"]`);
         const toCell = document.querySelector(`[data-x="${to.x}"][data-y="${to.y}"]`);
         const robot = document.getElementById('robotIcon');
@@ -374,17 +372,6 @@ const Activities = {
                 toCell.innerHTML = '<span class="robot-icon" id="robotIcon">🤖</span>';
                 robot.style.transform = 'scale(1)';
             }, 200);
-        }
-    },
-
-    animateRobotRotate(direction) {
-        const robot = document.getElementById('robotIcon');
-        if (robot) {
-            robot.style.transition = 'transform 0.3s ease';
-            robot.style.transform = `rotate(${direction * 90}deg) scale(1.1)`;
-            setTimeout(() => {
-                robot.style.transform = `rotate(${direction * 90}deg)`;
-            }, 300);
         }
     },
 
