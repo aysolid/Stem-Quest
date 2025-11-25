@@ -256,6 +256,10 @@ const Activities = {
         let step = 0;
         const executeStep = () => {
             if (step >= this.currentAnswer.length) {
+                // Store final position
+                this.lastRobotPosition = { ...pos };
+                this.lastRobotDirection = dir;
+
                 // Check if robot reached goal
                 if (pos.x === goal.x && pos.y === goal.y) {
                     setTimeout(() => {
@@ -263,7 +267,7 @@ const Activities = {
                     }, 500);
                 } else {
                     setTimeout(() => {
-                        alert('🤔 Not quite there! The robot didn\'t reach the goal. Try again!');
+                        this.showLastPositionInfo(pos, goal);
                     }, 500);
                 }
                 return;
@@ -283,15 +287,21 @@ const Activities = {
 
                 // Check boundaries
                 if (newX < 0 || newX >= gridSize.cols || newY < 0 || newY >= gridSize.rows) {
-                    alert('💥 Oops! The robot hit a wall!');
+                    this.lastRobotPosition = { ...pos };
+                    this.lastRobotDirection = dir;
+                    setTimeout(() => {
+                        this.showLastPositionInfo(pos, goal, 'wall');
+                    }, 100);
                     return;
                 }
 
                 // Check obstacles
                 if (obstacles.some(o => o.x === newX && o.y === newY)) {
+                    this.lastRobotPosition = { ...pos };
+                    this.lastRobotDirection = dir;
                     this.showBumpAnimation(newX, newY);
                     setTimeout(() => {
-                        alert('💥 Oops! The robot hit an obstacle!');
+                        this.showLastPositionInfo(pos, goal, 'obstacle');
                     }, 500);
                     return;
                 }
@@ -313,6 +323,41 @@ const Activities = {
         };
 
         executeStep();
+    },
+
+    showLastPositionInfo(lastPos, goal, errorType = null) {
+        const directionNames = ['Up ⬆️', 'Right ➡️', 'Down ⬇️', 'Left ⬅️'];
+        const currentDirection = directionNames[this.lastRobotDirection] || 'Unknown';
+
+        // Calculate distance to goal
+        const distanceX = Math.abs(goal.x - lastPos.x);
+        const distanceY = Math.abs(goal.y - lastPos.y);
+        const totalDistance = distanceX + distanceY;
+
+        let message = '';
+        if (errorType === 'wall') {
+            message = `💥 Oops! The robot hit a wall!\n\n`;
+        } else if (errorType === 'obstacle') {
+            message = `💥 Oops! The robot hit an obstacle!\n\n`;
+        } else {
+            message = `🤔 Not quite there! The robot didn't reach the goal.\n\n`;
+        }
+
+        message += `📍 Last Position: (${lastPos.x}, ${lastPos.y})\n`;
+        message += `🧭 Facing: ${currentDirection}\n`;
+        message += `🎯 Goal Position: (${goal.x}, ${goal.y})\n`;
+        message += `📏 Distance to Goal: ${totalDistance} steps\n\n`;
+
+        if (distanceX > 0) {
+            const horizontalDir = goal.x > lastPos.x ? 'right' : 'left';
+            message += `💡 Hint: Try moving ${distanceX} step(s) ${horizontalDir}\n`;
+        }
+        if (distanceY > 0) {
+            const verticalDir = goal.y > lastPos.y ? 'down' : 'up';
+            message += `💡 Hint: Try moving ${distanceY} step(s) ${verticalDir}\n`;
+        }
+
+        alert(message);
     },
 
     animateRobotMove(from, to, direction) {
@@ -406,124 +451,360 @@ const Activities = {
     renderPattern(container) {
         const { patterns } = this.currentQuest.activity;
         this.currentAnswer = {};
-        
-        let html = '<h3>Find the Patterns</h3>';
-        
+        this.patternHintsShown = {};
+
+        let html = `
+            <div class="pattern-quest-container">
+                <h3 class="quest-section-title">🔍 Find the Patterns</h3>
+                <p class="quest-instruction">Analyze each sequence and find what comes next!</p>
+        `;
+
         patterns.forEach((pattern, index) => {
+            const patternTypeLabel = {
+                'arithmetic': '➕ Arithmetic',
+                'geometric': '✖️ Geometric',
+                'alternating': '🔄 Alternating',
+                'missing-middle': '❓ Missing Value',
+                'visual-sequence': '👁️ Visual'
+            }[pattern.type] || '🔍 Pattern';
+
             html += `
-                <div class="pattern-display">
-                    ${pattern.sequence.map(item => `
-                        <div class="pattern-item ${item === '?' ? 'mystery' : ''}">${item}</div>
-                    `).join('')}
-                </div>
-                
-                <h4>What comes next?</h4>
-                <div class="options-grid">
-                    ${pattern.options.map(option => `
-                        <button class="option-btn" 
-                                data-pattern="${index}" 
-                                data-answer="${option}"
-                                onclick="Activities.selectOption(${index}, '${option}')">
-                            ${option}
+                <div class="pattern-card" id="pattern-${index}">
+                    <div class="pattern-type-badge">${patternTypeLabel}</div>
+                    <div class="pattern-display">
+                        ${pattern.sequence.map(item => `
+                            <div class="pattern-item ${item === '?' ? 'mystery' : ''}">${item}</div>
+                        `).join('')}
+                    </div>
+
+                    <div class="pattern-hint-container" id="hint-${index}" style="display: none;">
+                        <div class="hint-box">
+                            <span class="hint-icon">💡</span>
+                            <span class="hint-text">${pattern.hint}</span>
+                        </div>
+                    </div>
+
+                    <div class="pattern-controls">
+                        <button class="btn-hint" onclick="Activities.showPatternHint(${index})" id="hint-btn-${index}">
+                            <span>💡</span> Need a hint?
                         </button>
-                    `).join('')}
+                    </div>
+
+                    <h4 class="pattern-question">What comes next?</h4>
+                    <div class="options-grid">
+                        ${pattern.options.map(option => `
+                            <button class="option-btn"
+                                    data-pattern="${index}"
+                                    data-answer="${option}"
+                                    onclick="Activities.selectPatternOption(${index}, '${option}')">
+                                ${option}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="pattern-feedback" id="feedback-${index}"></div>
                 </div>
-                <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;">
             `;
         });
-        
+
+        html += '</div>';
+
         container.innerHTML = html;
-        document.getElementById('questProgress').style.width = '33%';
+        document.getElementById('questProgress').style.width = '25%';
     },
     
-    selectOption(patternIndex, answer) {
-        this.currentAnswer[patternIndex] = answer;
-        
+    showPatternHint(patternIndex) {
+        const hintContainer = document.getElementById(`hint-${patternIndex}`);
+        const hintBtn = document.getElementById(`hint-btn-${patternIndex}`);
+
+        if (hintContainer.style.display === 'none') {
+            hintContainer.style.display = 'block';
+            hintContainer.style.animation = 'slideDown 0.3s ease-out';
+            hintBtn.innerHTML = '<span>🙈</span> Hide hint';
+            this.patternHintsShown[patternIndex] = true;
+        } else {
+            hintContainer.style.display = 'none';
+            hintBtn.innerHTML = '<span>💡</span> Need a hint?';
+        }
+    },
+
+    selectPatternOption(patternIndex, answer) {
+        const pattern = this.currentQuest.activity.patterns[patternIndex];
         const buttons = document.querySelectorAll(`[data-pattern="${patternIndex}"]`);
-        buttons.forEach(btn => btn.classList.remove('selected'));
-        
-        event.target.classList.add('selected');
-        
+        const feedbackDiv = document.getElementById(`feedback-${patternIndex}`);
+        const patternCard = document.getElementById(`pattern-${patternIndex}`);
+
+        // Remove previous selections
+        buttons.forEach(btn => {
+            btn.classList.remove('selected', 'correct-answer', 'wrong-answer');
+            btn.disabled = false;
+        });
+
+        // Check if answer is correct
+        const isCorrect = String(answer) === String(pattern.answer);
+        const selectedButton = event.target;
+
+        if (isCorrect) {
+            selectedButton.classList.add('correct-answer');
+            this.currentAnswer[patternIndex] = answer;
+
+            // Show success feedback
+            feedbackDiv.innerHTML = `
+                <div class="feedback-success">
+                    <span class="feedback-icon">✅</span>
+                    <span class="feedback-text">Excellent! You found the pattern!</span>
+                </div>
+            `;
+            feedbackDiv.style.animation = 'slideDown 0.3s ease-out';
+
+            // Disable all buttons for this pattern
+            buttons.forEach(btn => btn.disabled = true);
+
+            // Add success animation to card
+            patternCard.style.animation = 'successPulse 0.5s ease';
+            setTimeout(() => {
+                patternCard.style.animation = '';
+            }, 500);
+        } else {
+            selectedButton.classList.add('wrong-answer');
+
+            // Show gentle error feedback with shake animation
+            feedbackDiv.innerHTML = `
+                <div class="feedback-error">
+                    <span class="feedback-icon">🤔</span>
+                    <span class="feedback-text">Not quite! Try again or use the hint button.</span>
+                </div>
+            `;
+            feedbackDiv.style.animation = 'shake 0.5s ease';
+
+            // Shake the card
+            patternCard.style.animation = 'shake 0.5s ease';
+            setTimeout(() => {
+                patternCard.style.animation = '';
+                feedbackDiv.style.animation = '';
+                // Clear feedback after a moment
+                setTimeout(() => {
+                    feedbackDiv.innerHTML = '';
+                }, 2000);
+            }, 500);
+
+            // Re-enable button after animation
+            setTimeout(() => {
+                selectedButton.classList.remove('wrong-answer');
+            }, 1000);
+        }
+
+        // Update progress
         const totalPatterns = this.currentQuest.activity.patterns.length;
         const answered = Object.keys(this.currentAnswer).length;
-        document.getElementById('questProgress').style.width = 
-            Math.min((answered / totalPatterns) * 100, 90) + '%';
+        document.getElementById('questProgress').style.width =
+            Math.min(25 + (answered / totalPatterns) * 65, 90) + '%';
+    },
+
+    selectOption(patternIndex, answer) {
+        // Legacy function - redirect to new function
+        this.selectPatternOption(patternIndex, answer);
     },
     
     renderDecomposition(container) {
         const { categories, items } = this.currentQuest.activity;
         this.currentAnswer = {};
-        
+        this.originalItemOrder = [...items];
+
         let html = `
-            <h3>Sort the Items</h3>
-            <p>Drag each item to the correct category:</p>
+            <div class="data-sorter-container">
+                <h3 class="quest-section-title">🗂️ Sort the Items</h3>
+                <p class="quest-instruction">Drag each item to its correct category. Items can be moved between categories!</p>
+
+                <div class="sorter-controls">
+                    <button class="btn-shuffle" onclick="Activities.shuffleItems()">
+                        <span>🔀</span> Shuffle Items
+                    </button>
+                </div>
+
+                <div class="categories-container">
         `;
-        
-        categories.forEach(category => {
+
+        categories.forEach(cat => {
+            const categoryName = cat.name || cat;
+            const categoryIcon = cat.icon || '📁';
+            const categoryColor = cat.color || '#f3f4f6';
+
             html += `
-                <div class="quest-card mt-4">
-                    <h4>${category}</h4>
-                    <div class="sequence-zone" id="category-${category}" data-category="${category}">
-                        <p style="color: #6b7280;">Drop items here...</p>
+                <div class="category-bin" id="category-${categoryName}" data-category="${categoryName}" style="--category-color: ${categoryColor}">
+                    <div class="category-header">
+                        <span class="category-icon">${categoryIcon}</span>
+                        <h4 class="category-title">${categoryName}</h4>
+                    </div>
+                    <div class="category-drop-zone" data-category="${categoryName}">
+                        <p class="drop-placeholder">Drop items here...</p>
                     </div>
                 </div>
             `;
         });
-        
+
         html += `
-            <h3 class="mt-8">Items to Sort</h3>
-            <div class="command-blocks">
-                ${items.map((item, i) => `
-                    <div class="command-block" draggable="true" data-item="${i}" data-name="${item.name}">
-                        ${item.name}
-                    </div>
-                `).join('')}
+                </div>
+
+                <h3 class="quest-section-title mt-8">📦 Items to Sort</h3>
+                <div class="items-grid" id="itemsGrid">
+                    ${items.map((item, i) => `
+                        <div class="sortable-item" draggable="true" data-item="${i}" data-name="${item.name}" data-category="${item.category}">
+                            <span class="item-icon">${item.icon || '📄'}</span>
+                            <span class="item-name">${item.name}</span>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         `;
-        
+
         container.innerHTML = html;
         this.setupDecompositionDrag();
+        document.getElementById('questProgress').style.width = '25%';
     },
     
     setupDecompositionDrag() {
-        const items = document.querySelectorAll('[data-item]');
-        const zones = document.querySelectorAll('[data-category]');
-        
-        items.forEach(item => {
+        const setupItemDrag = (item) => {
             item.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('item', e.target.dataset.item);
-                e.dataTransfer.setData('name', e.target.dataset.name);
+                e.dataTransfer.setData('item', item.dataset.item);
+                e.dataTransfer.setData('name', item.dataset.name);
+                e.dataTransfer.setData('category', item.dataset.category);
+                item.classList.add('dragging');
             });
-        });
-        
+
+            item.addEventListener('dragend', (e) => {
+                item.classList.remove('dragging');
+            });
+        };
+
+        const items = document.querySelectorAll('.sortable-item');
+        items.forEach(setupItemDrag);
+
+        const zones = document.querySelectorAll('.category-drop-zone');
+
         zones.forEach(zone => {
-            zone.addEventListener('dragover', (e) => e.preventDefault());
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', (e) => {
+                if (e.target === zone) {
+                    zone.classList.remove('drag-over');
+                }
+            });
+
             zone.addEventListener('drop', (e) => {
                 e.preventDefault();
+                zone.classList.remove('drag-over');
+
                 const itemIndex = e.dataTransfer.getData('item');
                 const itemName = e.dataTransfer.getData('name');
-                const category = zone.dataset.category;
-                
-                this.currentAnswer[itemIndex] = category;
-                
-                if (zone.querySelector('p')) {
-                    zone.innerHTML = '';
+                const itemCategory = e.dataTransfer.getData('category');
+                const categoryName = zone.dataset.category;
+
+                // Find and move the item
+                const draggedItem = document.querySelector(`[data-item="${itemIndex}"]`);
+                if (!draggedItem) return;
+
+                // Update answer
+                this.currentAnswer[itemIndex] = categoryName;
+
+                // Remove placeholder if exists
+                const placeholder = zone.querySelector('.drop-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
                 }
-                
-                const dropped = document.createElement('span');
-                dropped.className = 'sequence-item';
-                dropped.textContent = itemName;
-                zone.appendChild(dropped);
-                
-                const original = document.querySelector(`[data-item="${itemIndex}"]`);
-                if (original) original.style.display = 'none';
-                
+
+                // Move item to zone
+                zone.appendChild(draggedItem);
+                draggedItem.classList.add('placed-item');
+
+                // Add remove button if not present
+                if (!draggedItem.querySelector('.item-remove')) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'item-remove';
+                    removeBtn.innerHTML = '✕';
+                    removeBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.removeItemFromCategory(itemIndex);
+                    };
+                    draggedItem.appendChild(removeBtn);
+                }
+
+                // Update progress
                 const total = this.currentQuest.activity.items.length;
                 const placed = Object.keys(this.currentAnswer).length;
-                document.getElementById('questProgress').style.width = 
-                    Math.min((placed / total) * 100, 90) + '%';
+                document.getElementById('questProgress').style.width =
+                    Math.min(25 + (placed / total) * 65, 90) + '%';
+
+                // Show placeholder if zone is empty
+                this.updateDropZonePlaceholders();
             });
         });
+    },
+
+    removeItemFromCategory(itemIndex) {
+        const item = document.querySelector(`[data-item="${itemIndex}"]`);
+        if (!item) return;
+
+        // Remove from answer
+        delete this.currentAnswer[itemIndex];
+
+        // Remove the item's remove button
+        const removeBtn = item.querySelector('.item-remove');
+        if (removeBtn) removeBtn.remove();
+
+        // Move back to items grid
+        item.classList.remove('placed-item');
+        const itemsGrid = document.getElementById('itemsGrid');
+        itemsGrid.appendChild(item);
+
+        // Update progress
+        const total = this.currentQuest.activity.items.length;
+        const placed = Object.keys(this.currentAnswer).length;
+        document.getElementById('questProgress').style.width =
+            Math.min(25 + (placed / total) * 65, 90) + '%';
+
+        // Update placeholders
+        this.updateDropZonePlaceholders();
+    },
+
+    updateDropZonePlaceholders() {
+        const zones = document.querySelectorAll('.category-drop-zone');
+        zones.forEach(zone => {
+            const hasItems = zone.querySelectorAll('.sortable-item').length > 0;
+            const hasPlaceholder = zone.querySelector('.drop-placeholder');
+
+            if (!hasItems && !hasPlaceholder) {
+                const placeholder = document.createElement('p');
+                placeholder.className = 'drop-placeholder';
+                placeholder.textContent = 'Drop items here...';
+                zone.appendChild(placeholder);
+            } else if (hasItems && hasPlaceholder) {
+                hasPlaceholder.remove();
+            }
+        });
+    },
+
+    shuffleItems() {
+        const itemsGrid = document.getElementById('itemsGrid');
+        const items = Array.from(itemsGrid.querySelectorAll('.sortable-item'));
+
+        // Fisher-Yates shuffle
+        for (let i = items.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [items[i], items[j]] = [items[j], items[i]];
+        }
+
+        // Clear and re-append in new order
+        itemsGrid.innerHTML = '';
+        items.forEach(item => itemsGrid.appendChild(item));
+
+        // Add shuffle animation
+        itemsGrid.style.animation = 'shuffle 0.5s ease';
+        setTimeout(() => {
+            itemsGrid.style.animation = '';
+        }, 500);
     },
     
     submit(questId) {
