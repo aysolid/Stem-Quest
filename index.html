@@ -7,8 +7,44 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <!-- Accessibility Controls -->
+    <div class="accessibility-controls">
+        <button class="a11y-toggle" onclick="toggleA11yPanel()">
+            ♿ Accessibility
+        </button>
+        <div class="a11y-panel" id="a11yPanel">
+            <div class="a11y-option">
+                <label>
+                    <input type="checkbox" id="reducedMotion">
+                    Reduce Motion
+                </label>
+            </div>
+            <div class="a11y-option">
+                <label>
+                    <input type="checkbox" id="highContrast">
+                    High Contrast
+                </label>
+            </div>
+            <div class="a11y-option">
+                <label>
+                    <input type="checkbox" id="dyslexiaFont">
+                    Dyslexia-Friendly Font
+                </label>
+            </div>
+            <div class="a11y-option">
+                <button class="btn-audio" onclick="readPageAloud()">
+                    🔊 Read Page Aloud
+                </button>
+            </div>
+            <div class="a11y-option">
+                <label style="display: block;">Text Size:</label>
+                <input type="range" id="textSize" min="14" max="24" value="16">
+            </div>
+        </div>
+    </div>
+
     <div id="app"></div>
-    
+
     <!-- Bottom Navigation -->
     <nav id="bottomNav" class="bottom-nav hidden">
         <button class="nav-item active" data-screen="dashboard">

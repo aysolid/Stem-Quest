@@ -3,37 +3,100 @@ const Screens = {
     welcome() {
         return `
             <div class="screen welcome-screen">
-                <div class="logo">🎯</div>
-                <h1>STEM Quest World</h1>
-                <p>A safe space to explore computational thinking through play</p>
-                
-                <div class="features">
-                    <div class="feature">
-                        <div class="feature-icon">👥</div>
-                        <div class="feature-text">
-                            <h3>Safe & Judgment-Free</h3>
-                            <p>Learn at your own pace with no pressure</p>
-                        </div>
+                <!-- Background Floating Shapes -->
+                <div class="bg-shapes">
+                    <div class="bg-shape"></div>
+                    <div class="bg-shape"></div>
+                    <div class="bg-shape"></div>
+                </div>
+
+                <!-- Hero Scene -->
+                <div class="hero-scene">
+                    <div class="hero-compass">
+                        <div class="compass-glow"></div>
+                        🧭
                     </div>
-                    <div class="feature">
-                        <div class="feature-icon">🎯</div>
-                        <div class="feature-text">
-                            <h3>Personal Progress</h3>
-                            <p>Track your computational thinking skills</p>
+                    <div class="robot-helper">🤖</div>
+                </div>
+
+                <!-- Hero Title Section -->
+                <h1 class="hero-title">STEM Quest World</h1>
+                <p class="hero-subtitle">Begin your journey as a STEM Explorer</p>
+                <p class="hero-supporting">A judgment-free world where every learner becomes a creator</p>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn-quest-start" onclick="App.navigate('characterCreation')">
+                        <span class="btn-icon">🎯</span>
+                        Start Your Quest
+                    </button>
+                    <button class="btn-avatar-create" onclick="App.navigate('characterCreation')">
+                        <span class="btn-icon">👤</span>
+                        Create Your Avatar
+                    </button>
+                    <button class="btn-continue hidden" id="continueBtn" onclick="App.navigate('dashboard')">
+                        <span class="btn-icon">▶️</span>
+                        Continue Adventure
+                    </button>
+                </div>
+
+                <!-- Quest Preview Section -->
+                <div class="quest-preview-section">
+                    <h3 class="section-title">Ready to Begin? Choose Your First Quest</h3>
+                    <div class="quest-preview-scroll">
+                        <div class="quest-preview-card" onclick="App.navigate('questDetail', 'robot-navigator')">
+                            <div class="preview-icon">🤖</div>
+                            <h4>Robot Navigator</h4>
+                            <p>Guide the robot to safety</p>
+                            <span class="preview-badge">Algorithm</span>
                         </div>
-                    </div>
-                    <div class="feature">
-                        <div class="feature-icon">⚡</div>
-                        <div class="feature-text">
-                            <h3>Interactive Quests</h3>
-                            <p>Learn through engaging challenges</p>
+                        <div class="quest-preview-card" onclick="App.navigate('questDetail', 'pattern-detective')">
+                            <div class="preview-icon">🔍</div>
+                            <h4>Pattern Detective</h4>
+                            <p>Unlock the hidden patterns</p>
+                            <span class="preview-badge">Pattern Recognition</span>
+                        </div>
+                        <div class="quest-preview-card" onclick="App.navigate('questDetail', 'data-sorter')">
+                            <div class="preview-icon">📚</div>
+                            <h4>Data Sorter</h4>
+                            <p>Organize the library chaos</p>
+                            <span class="preview-badge">Decomposition</span>
+                        </div>
+                        <div class="quest-preview-card preview-locked">
+                            <div class="preview-icon">🔒</div>
+                            <h4>More Coming Soon</h4>
+                            <p>Complete quests to unlock</p>
                         </div>
                     </div>
                 </div>
-                
-                <button class="btn btn-primary" onclick="App.navigate('characterCreation')">
-                    Start Your Quest
-                </button>
+
+                <!-- Features Section -->
+                <div class="features-section">
+                    <h3 class="section-title">Why STEM Quest World?</h3>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-illustration">
+                                🛡️
+                            </div>
+                            <h4>Safe & Judgment-Free</h4>
+                            <p>Learn at your own pace in a supportive environment. No pressure, just progress.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-illustration">
+                                📈
+                            </div>
+                            <h4>Personal Progress</h4>
+                            <p>Track your computational thinking journey with detailed skill trees and XP.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-illustration">
+                                🎮
+                            </div>
+                            <h4>Interactive Quests</h4>
+                            <p>Engage with hands-on challenges that make learning feel like play.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     },
