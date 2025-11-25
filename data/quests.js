@@ -40,19 +40,39 @@ const QUESTS = [
         activity: {
             patterns: [
                 {
+                    type: 'arithmetic',
                     sequence: [3, 5, 7, 9, '?'],
                     answer: 11,
-                    options: [10, 11, 12, 13]
+                    options: [10, 11, 12, 13],
+                    hint: 'Each number increases by 2. What comes after 9?'
                 },
                 {
+                    type: 'visual-sequence',
                     sequence: ['🌸', '🌸🌸', '🌸🌸🌸', '?'],
                     answer: '🌸🌸🌸🌸',
-                    options: ['🌸', '🌸🌸🌸🌸', '🌸🌸🌸🌸🌸', '🌸🌸']
+                    options: ['🌸', '🌸🌸🌸🌸', '🌸🌸🌸🌸🌸', '🌸🌸'],
+                    hint: 'Each step adds one more flower. How many should be next?'
                 },
                 {
+                    type: 'geometric',
                     sequence: [2, 4, 8, 16, '?'],
                     answer: 32,
-                    options: [24, 28, 32, 36]
+                    options: [24, 28, 32, 36],
+                    hint: 'Each number doubles! What is 16 × 2?'
+                },
+                {
+                    type: 'alternating',
+                    sequence: [1, 10, 2, 20, 3, 30, '?'],
+                    answer: 4,
+                    options: [4, 40, 5, 35],
+                    hint: 'Look at every other number. One pattern adds 1, the other adds 10!'
+                },
+                {
+                    type: 'missing-middle',
+                    sequence: [5, 10, '?', 20, 25],
+                    answer: 15,
+                    options: [12, 13, 15, 17],
+                    hint: 'This sequence increases by 5 each time. What fits in the middle?'
                 }
             ]
         },
@@ -73,12 +93,25 @@ const QUESTS = [
         scenario: 'The library computer crashed! Help organize the data.',
         activityType: 'decomposition',
         activity: {
-            categories: ['Books', 'Magazines', 'DVDs', 'Audiobooks'],
+            categories: [
+                { name: 'Books', icon: '📚', color: '#dbeafe' },
+                { name: 'Magazines', icon: '📰', color: '#fef3c7' },
+                { name: 'DVDs', icon: '📀', color: '#e0e7ff' },
+                { name: 'Audiobooks', icon: '🎧', color: '#ccfbf1' }
+            ],
             items: [
-                { name: 'Harry Potter Novel', category: 'Books' },
-                { name: 'National Geographic', category: 'Magazines' },
-                { name: 'Frozen 2', category: 'DVDs' },
-                { name: 'Science Podcast', category: 'Audiobooks' }
+                { name: 'Harry Potter Novel', category: 'Books', icon: '📖' },
+                { name: 'National Geographic', category: 'Magazines', icon: '📰' },
+                { name: 'Frozen 2', category: 'DVDs', icon: '🎬' },
+                { name: 'Science Podcast', category: 'Audiobooks', icon: '🎙️' },
+                { name: 'Lord of the Rings', category: 'Books', icon: '📕' },
+                { name: 'Time Magazine', category: 'Magazines', icon: '📑' },
+                { name: 'The Lion King', category: 'DVDs', icon: '🎥' },
+                { name: 'Mystery Stories', category: 'Audiobooks', icon: '🎧' },
+                { name: 'Science Fiction Novel', category: 'Books', icon: '📘' },
+                { name: 'Sports Weekly', category: 'Magazines', icon: '🗞️' },
+                { name: 'Toy Story', category: 'DVDs', icon: '💿' },
+                { name: 'History Tales', category: 'Audiobooks', icon: '🔊' }
             ]
         },
         hints: [
