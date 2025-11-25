@@ -102,48 +102,225 @@ const Screens = {
     },
 
     characterCreation() {
+        const user = UserData.get();
+        const hasAvatar = user.name && user.avatar;
+
         return `
             <div class="screen character-creation">
-                <h2 class="text-center mb-4">Create Your Hero</h2>
-                
-                <div class="avatar-preview" id="avatarPreview" style="background: #FFD1A9;">
-                    👤
+                <!-- Back to Home Button -->
+                <button class="btn-back-home" onclick="App.navigate('${hasAvatar ? 'dashboard' : 'welcome'}')">
+                    <span>← Back to ${hasAvatar ? 'Hub' : 'Home'}</span>
+                </button>
+
+                <h2 class="avatar-title">Create Your Hero</h2>
+                <p class="avatar-subtitle">Design your unique STEM Explorer</p>
+
+                <!-- Live SVG Avatar Preview -->
+                <div class="avatar-preview-container">
+                    <svg id="avatarPreview" viewBox="0 0 200 240" class="avatar-svg">
+                        <!-- Background circle -->
+                        <circle cx="100" cy="100" r="80" fill="#e0f2fe" class="avatar-bg"/>
+
+                        <!-- Body -->
+                        <rect x="75" y="140" width="50" height="80" rx="10" fill="#4A90E2" class="avatar-body"/>
+
+                        <!-- Head -->
+                        <circle cx="100" cy="100" r="45" fill="#FFD1A9" class="avatar-head"/>
+
+                        <!-- Hair -->
+                        <g class="avatar-hair-group">
+                            <ellipse cx="100" cy="70" rx="48" ry="35" fill="#8B4513" class="avatar-hair"/>
+                        </g>
+
+                        <!-- Eyes -->
+                        <circle cx="88" cy="95" r="4" fill="#2C2C2C"/>
+                        <circle cx="112" cy="95" r="4" fill="#2C2C2C"/>
+
+                        <!-- Smile -->
+                        <path d="M 85 110 Q 100 118 115 110" stroke="#2C2C2C" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+                        <!-- Accessory (initially hidden) -->
+                        <g class="avatar-accessory" style="display: none;">
+                            <ellipse cx="100" cy="65" rx="30" ry="8" fill="#DC143C" class="accessory-hat"/>
+                            <circle cx="100" cy="60" r="3" fill="#fff" class="accessory-hat-pom"/>
+                        </g>
+                    </svg>
+                    <div class="avatar-preview-glow"></div>
                 </div>
-                
-                <div class="input-group">
-                    <label>Hero Name</label>
-                    <input type="text" id="heroName" placeholder="Enter your name" value="Explorer">
-                </div>
-                
-                <div class="input-group">
-                    <label>Skin Tone</label>
-                    <div class="color-grid">
-                        ${['#FFD1A9', '#F3C5A5', '#D4A574', '#C68642', '#8D5524', '#614035'].map((color, i) => `
-                            <button class="color-option ${i === 0 ? 'selected' : ''}" 
-                                    style="background: ${color}" 
-                                    data-type="skinTone" 
-                                    data-color="${color}">
-                            </button>
-                        `).join('')}
+
+                <!-- Customization Options -->
+                <div class="avatar-customization">
+                    <div class="input-group-modern">
+                        <label>
+                            <span class="label-icon">✏️</span>
+                            Hero Name
+                        </label>
+                        <input type="text" id="heroName" placeholder="Enter your name" value="Explorer" class="input-modern">
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label>
+                            <span class="label-icon">🎨</span>
+                            Skin Tone
+                        </label>
+                        <div class="color-grid-modern">
+                            ${['#FFD1A9', '#F3C5A5', '#E9B68F', '#D4A574', '#C68642', '#A67650', '#8D5524', '#614035'].map((color, i) => `
+                                <button class="color-option-modern ${i === 0 ? 'selected' : ''}"
+                                        style="background: ${color}"
+                                        data-type="skinTone"
+                                        data-color="${color}"
+                                        aria-label="Skin tone ${i + 1}">
+                                    <span class="color-check">✓</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label>
+                            <span class="label-icon">💇</span>
+                            Hairstyle
+                        </label>
+                        <div class="hairstyle-grid">
+                            ${[
+                                { name: 'Short', value: 'short', icon: '🧑' },
+                                { name: 'Long', value: 'long', icon: '👩' },
+                                { name: 'Curly', value: 'curly', icon: '👨‍🦱' },
+                                { name: 'Bald', value: 'bald', icon: '👨‍🦲' }
+                            ].map((style, i) => `
+                                <button class="hairstyle-option ${i === 0 ? 'selected' : ''}"
+                                        data-type="hairstyle"
+                                        data-value="${style.value}">
+                                    <span class="hairstyle-icon">${style.icon}</span>
+                                    <span class="hairstyle-name">${style.name}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label>
+                            <span class="label-icon">🌈</span>
+                            Hair Color
+                        </label>
+                        <div class="color-grid-modern">
+                            ${['#8B4513', '#2C2C2C', '#654321', '#F4C430', '#FFD700', '#DC143C', '#9370DB', '#1E90FF'].map((color, i) => `
+                                <button class="color-option-modern ${i === 0 ? 'selected' : ''}"
+                                        style="background: ${color}"
+                                        data-type="hairColor"
+                                        data-color="${color}"
+                                        aria-label="Hair color ${i + 1}">
+                                    <span class="color-check">✓</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label>
+                            <span class="label-icon">👕</span>
+                            Clothing Color
+                        </label>
+                        <div class="color-grid-modern">
+                            ${['#4A90E2', '#0d9488', '#DC143C', '#9370DB', '#FF6B6B', '#4ECDC4', '#FFD93D', '#95E1D3'].map((color, i) => `
+                                <button class="color-option-modern ${i === 0 ? 'selected' : ''}"
+                                        style="background: ${color}"
+                                        data-type="clothingColor"
+                                        data-color="${color}"
+                                        aria-label="Clothing color ${i + 1}">
+                                    <span class="color-check">✓</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="input-group-modern">
+                        <label>
+                            <span class="label-icon">🎩</span>
+                            Accessories (Optional)
+                        </label>
+                        <div class="accessory-grid">
+                            ${[
+                                { name: 'None', value: 'none', icon: '🚫' },
+                                { name: 'Hat', value: 'hat', icon: '🎩' },
+                                { name: 'Glasses', value: 'glasses', icon: '👓' },
+                                { name: 'Headphones', value: 'headphones', icon: '🎧' }
+                            ].map((acc, i) => `
+                                <button class="accessory-option ${i === 0 ? 'selected' : ''}"
+                                        data-type="accessory"
+                                        data-value="${acc.value}">
+                                    <span class="accessory-icon">${acc.icon}</span>
+                                    <span class="accessory-name">${acc.name}</span>
+                                </button>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
-                
-                <div class="input-group">
-                    <label>Hair Color</label>
-                    <div class="color-grid">
-                        ${['#8B4513', '#2C2C2C', '#F4C430', '#DC143C', '#9370DB'].map((color, i) => `
-                            <button class="color-option ${i === 0 ? 'selected' : ''}" 
-                                    style="background: ${color}" 
-                                    data-type="hairColor" 
-                                    data-color="${color}">
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-                
-                <button class="btn btn-primary mt-8" onclick="App.completeCharacterCreation()">
+
+                <button class="btn-start-journey" onclick="App.completeCharacterCreation()">
+                    <span class="btn-icon">🚀</span>
                     Start My Journey
                 </button>
+            </div>
+        `;
+    },
+
+    questSelection() {
+        const user = UserData.get();
+
+        return `
+            <div class="screen quest-selection-screen">
+                <!-- Global Top Navigation -->
+                <nav class="top-nav">
+                    <button class="nav-link" onclick="App.navigate('dashboard')">
+                        <span class="nav-link-icon">🏠</span>
+                        <span>Home</span>
+                    </button>
+                    <button class="nav-link" onclick="App.navigate('characterCreation')">
+                        <span class="nav-link-icon">👤</span>
+                        <span>My Avatar</span>
+                    </button>
+                    <button class="nav-link active">
+                        <span class="nav-link-icon">🎯</span>
+                        <span>Quests</span>
+                    </button>
+                    <button class="nav-link" onclick="App.navigate('settings')">
+                        <span class="nav-link-icon">⚙️</span>
+                        <span>Settings</span>
+                    </button>
+                    <button class="nav-link" onclick="App.navigate('welcome')">
+                        <span class="nav-link-icon">🚪</span>
+                        <span>Exit Game</span>
+                    </button>
+                </nav>
+
+                <div class="quest-selection-content">
+                    <div class="hero-welcome">
+                        <h1 class="welcome-hero-title">Welcome, ${user.name || 'Explorer'}! 🎉</h1>
+                        <p class="welcome-hero-subtitle">Choose your first quest and begin your STEM adventure</p>
+                    </div>
+
+                    <div class="quest-cards-grid">
+                        ${QUESTS.map(quest => `
+                            <div class="quest-selection-card" onclick="App.navigate('questDetail', '${quest.id}')">
+                                <div class="quest-card-icon">${quest.category === 'algorithm' ? '🤖' : quest.category === 'pattern' ? '🔍' : '📚'}</div>
+                                <div class="quest-card-content">
+                                    <h3 class="quest-card-title">${quest.title}</h3>
+                                    <p class="quest-card-description">${quest.description}</p>
+                                    <div class="quest-card-meta">
+                                        <span class="meta-badge">⏱️ ${quest.time} min</span>
+                                        <span class="meta-badge">⭐ ${quest.xp} XP</span>
+                                        <span class="meta-badge">📊 ${quest.difficulty}</span>
+                                    </div>
+                                    <span class="quest-card-category category-${quest.category}">${quest.category}</span>
+                                </div>
+                                <button class="quest-card-btn">
+                                    Start Quest →
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
             </div>
         `;
     },
