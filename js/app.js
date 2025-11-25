@@ -220,6 +220,149 @@ const App = {
     }
 };
 
+// Accessibility Functions
+function toggleA11yPanel() {
+    const panel = document.getElementById('a11yPanel');
+    panel.classList.toggle('active');
+}
+
+// Close accessibility panel when clicking outside
+document.addEventListener('click', (e) => {
+    const controls = document.querySelector('.accessibility-controls');
+    const panel = document.getElementById('a11yPanel');
+    if (controls && !controls.contains(e.target)) {
+        panel?.classList.remove('active');
+    }
+});
+
+// Reduced Motion
+document.addEventListener('DOMContentLoaded', () => {
+    const reducedMotion = document.getElementById('reducedMotion');
+
+    // Check for saved preference
+    if (localStorage.getItem('reducedMotion') === 'true') {
+        reducedMotion.checked = true;
+        document.body.classList.add('reduced-motion');
+    }
+
+    reducedMotion.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            document.body.classList.add('reduced-motion');
+            localStorage.setItem('reducedMotion', 'true');
+        } else {
+            document.body.classList.remove('reduced-motion');
+            localStorage.setItem('reducedMotion', 'false');
+        }
+    });
+});
+
+// High Contrast
+document.addEventListener('DOMContentLoaded', () => {
+    const highContrast = document.getElementById('highContrast');
+
+    // Check for saved preference
+    if (localStorage.getItem('highContrast') === 'true') {
+        highContrast.checked = true;
+        document.body.classList.add('high-contrast');
+    }
+
+    highContrast.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            document.body.classList.add('high-contrast');
+            localStorage.setItem('highContrast', 'true');
+        } else {
+            document.body.classList.remove('high-contrast');
+            localStorage.setItem('highContrast', 'false');
+        }
+    });
+});
+
+// Dyslexia Font
+document.addEventListener('DOMContentLoaded', () => {
+    const dyslexiaFont = document.getElementById('dyslexiaFont');
+
+    // Check for saved preference
+    if (localStorage.getItem('dyslexiaFont') === 'true') {
+        dyslexiaFont.checked = true;
+        document.body.style.fontFamily = "'OpenDyslexic', 'Lexend', sans-serif";
+    }
+
+    dyslexiaFont.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            document.body.style.fontFamily = "'OpenDyslexic', 'Lexend', sans-serif";
+            localStorage.setItem('dyslexiaFont', 'true');
+        } else {
+            document.body.style.fontFamily = "'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+            localStorage.setItem('dyslexiaFont', 'false');
+        }
+    });
+});
+
+// Text Size
+document.addEventListener('DOMContentLoaded', () => {
+    const textSize = document.getElementById('textSize');
+
+    // Check for saved preference
+    const savedSize = localStorage.getItem('textSize');
+    if (savedSize) {
+        textSize.value = savedSize;
+        document.documentElement.style.fontSize = savedSize + 'px';
+    }
+
+    textSize.addEventListener('input', (e) => {
+        document.documentElement.style.fontSize = e.target.value + 'px';
+        localStorage.setItem('textSize', e.target.value);
+    });
+});
+
+// Read Page Aloud
+function readPageAloud() {
+    const heroSubtitle = document.querySelector('.hero-subtitle');
+    const heroSupporting = document.querySelector('.hero-supporting');
+
+    if (heroSubtitle && heroSupporting) {
+        const text = heroSubtitle.textContent + '. ' + heroSupporting.textContent;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.lang = 'en-US';
+        window.speechSynthesis.cancel(); // Cancel any ongoing speech
+        window.speechSynthesis.speak(utterance);
+    } else {
+        // If we're not on the welcome screen, read the main content
+        const mainContent = document.querySelector('.screen');
+        if (mainContent) {
+            const headings = mainContent.querySelectorAll('h1, h2, h3, p');
+            let text = '';
+            headings.forEach((el, i) => {
+                if (i < 5) { // Only read first 5 elements to avoid too much text
+                    text += el.textContent + '. ';
+                }
+            });
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.lang = 'en-US';
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+}
+
+// Show Continue Button for Returning Users
+document.addEventListener('DOMContentLoaded', () => {
+    // Add a small delay to ensure the DOM is ready
+    setTimeout(() => {
+        const continueBtn = document.getElementById('continueBtn');
+        if (continueBtn) {
+            const user = UserData.get();
+            if (user.name) {
+                continueBtn.classList.remove('hidden');
+            }
+        }
+    }, 100);
+});
+
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
