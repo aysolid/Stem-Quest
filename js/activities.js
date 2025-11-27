@@ -4,21 +4,8 @@ const Activities = {
     currentAnswer: null,
 
     init(questId) {
-        // First try to find the quest in the main QUESTS array
-        this.currentQuest = QUESTS.find(q => q.id === questId);
-
-        // If not found, search within levels of parent quests
-        if (!this.currentQuest) {
-            for (const parentQuest of QUESTS) {
-                if (parentQuest.levels) {
-                    const level = parentQuest.levels.find(l => l.id === questId);
-                    if (level) {
-                        this.currentQuest = level;
-                        break;
-                    }
-                }
-            }
-        }
+        // Use helper to find quest
+        this.currentQuest = QuestHelper.findQuest(questId);
 
         if (!this.currentQuest) return;
         
@@ -413,11 +400,45 @@ const Activities = {
         this.createConfetti();
 
         setTimeout(() => {
+            this.handleQuestCompletion();
+        }, 1000);
+    },
+
+    handleQuestCompletion() {
+        const questInfo = QuestHelper.getQuestInfo(this.currentQuest.id);
+
+        if (questInfo.isLevel) {
+            // This is a level in a multi-level quest
+            // First, mark this level as completed
+            UserData.completeQuest(this.currentQuest.id);
+
+            if (questInfo.nextLevel) {
+                // There's a next level - show congratulations and prompt to continue
+                const message = `🎉 Excellent work! You completed ${questInfo.quest.title}!\n\n` +
+                    `You've finished level ${questInfo.levelIndex + 1} of ${questInfo.totalLevels}.\n\n` +
+                    `Ready for the next challenge: ${questInfo.nextLevel.title}?`;
+
+                if (confirm(message)) {
+                    // Navigate to the next level
+                    App.navigate('questPlay', questInfo.nextLevel.id);
+                } else {
+                    // User wants to take a break - go back to dashboard
+                    App.navigate('dashboard');
+                }
+            } else {
+                // This was the last level - go to reflection
+                alert('🎉 Excellent work! You completed the final level!');
+                setTimeout(() => {
+                    App.navigate('reflection', this.currentQuest.id);
+                }, 500);
+            }
+        } else {
+            // This is a standalone quest - go straight to reflection
             alert('🎉 Excellent work! You solved it!');
             setTimeout(() => {
                 App.navigate('reflection', this.currentQuest.id);
             }, 500);
-        }, 1000);
+        }
     },
 
     createConfetti() {
@@ -838,26 +859,13 @@ const Activities = {
     },
     
     submit(questId) {
-        // First try to find the quest in the main QUESTS array
-        let quest = QUESTS.find(q => q.id === questId);
-
-        // If not found, search within levels of parent quests
-        if (!quest) {
-            for (const parentQuest of QUESTS) {
-                if (parentQuest.levels) {
-                    const level = parentQuest.levels.find(l => l.id === questId);
-                    if (level) {
-                        quest = level;
-                        break;
-                    }
-                }
-            }
-        }
+        // Use helper to find quest
+        const quest = QuestHelper.findQuest(questId);
 
         if (!quest) return;
 
         let isCorrect = false;
-        
+
         switch (quest.activityType) {
             case 'sequencing':
                 isCorrect = this.checkSequencing();
@@ -869,12 +877,12 @@ const Activities = {
                 isCorrect = this.checkDecomposition();
                 break;
         }
-        
+
         if (isCorrect) {
             document.getElementById('questProgress').style.width = '100%';
-            alert('🎉 Excellent work! You solved it!');
+            this.createConfetti();
             setTimeout(() => {
-                App.navigate('reflection', questId);
+                this.handleQuestCompletion();
             }, 1000);
         } else {
             alert('Not quite right. Try again! Use hints if you need help.');

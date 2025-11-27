@@ -613,33 +613,55 @@ const Screens = {
     },
 
     reflection(questId) {
-        const quest = QUESTS.find(q => q.id === questId);
-        
+        // Use helper to find quest - works for both parent quests and levels
+        const questInfo = QuestHelper.getQuestInfo(questId);
+
+        if (!questInfo) {
+            return `<div class="screen"><p>Quest not found.</p></div>`;
+        }
+
+        let quest, totalXP, questTitle;
+
+        if (questInfo.isLevel) {
+            // For multi-level quests, show parent quest info
+            quest = questInfo.quest;
+            questTitle = questInfo.parentQuest.title;
+
+            // Calculate total XP from all levels
+            totalXP = questInfo.parentQuest.levels.reduce((sum, level) => sum + level.xp, 0);
+        } else {
+            // For standalone quests
+            quest = questInfo.quest;
+            questTitle = quest.title;
+            totalXP = quest.xp;
+        }
+
         return `
             <div class="screen reflection-screen">
                 <div class="celebration">
                     <h2>🎉 Quest Complete!</h2>
-                    <div class="xp-earned">+${quest.xp} XP</div>
-                    <p>You earned the ${quest.title} badge!</p>
+                    <div class="xp-earned">+${totalXP} XP</div>
+                    <p>You earned the ${questTitle} badge!</p>
+                    ${questInfo.isLevel ? `<p class="text-sm">Completed all ${questInfo.totalLevels} levels!</p>` : ''}
                 </div>
-                
+
                 <h2 class="mb-4">Reflection Time 💭</h2>
-                
+
                 <div class="reflection-prompt">
                     <label>What CT strategies worked well for you?</label>
                     <textarea id="reflection1" placeholder="Think about how you broke down the problem..."></textarea>
                 </div>
-                
+
                 <div class="reflection-prompt">
                     <label>What will you explore next in STEM?</label>
                     <textarea id="reflection2" placeholder="What interests you?"></textarea>
                 </div>
-                
+
                 <div class="reflection-prompt">
                     <label>Who are your STEM learning allies?</label>
                     <textarea id="reflection3" placeholder="Who can help you on your journey?"></textarea>
                 </div>
-                
+
                 <div class="reflection-prompt">
                     <label>Confidence Level</label>
                     <div class="confidence-slider">
@@ -650,7 +672,7 @@ const Screens = {
                         </div>
                     </div>
                 </div>
-                
+
                 <button class="btn btn-primary mt-8" onclick="App.completeReflection('${questId}')">
                     Save to Journal
                 </button>
@@ -736,14 +758,31 @@ const Screens = {
                 <h3>Completed Quests</h3>
                 ${user.completedQuests.length > 0 ? `
                     ${user.completedQuests.map(questId => {
-                        const quest = QUESTS.find(q => q.id === questId);
-                        return quest ? `
+                        // Use helper to find quest - handles both parent quests and levels
+                        const questInfo = QuestHelper.getQuestInfo(questId);
+
+                        if (!questInfo) return '';
+
+                        // For levels, we only show parent quest in journal (avoid duplicates)
+                        if (questInfo.isLevel) {
+                            // Only show if this is the parent quest ID (not individual level)
+                            // We'll handle this by checking if the quest is a parent quest
+                            return '';
+                        }
+
+                        const quest = questInfo.quest;
+                        const totalXP = quest.levels ?
+                            quest.levels.reduce((sum, level) => sum + level.xp, 0) :
+                            quest.xp;
+
+                        return `
                             <div class="quest-card">
                                 <h3>${quest.title}</h3>
                                 <span class="quest-category category-${quest.category}">${quest.category}</span>
-                                <p>Earned ${quest.xp} XP</p>
+                                <p>Earned ${totalXP} XP</p>
+                                ${quest.levels ? `<p class="text-sm">Completed all ${quest.levels.length} levels</p>` : ''}
                             </div>
-                        ` : '';
+                        `;
                     }).join('')}
                 ` : '<p>No quests completed yet. Start your first quest!</p>'}
             </div>

@@ -295,17 +295,17 @@ const App = {
         const reflection2 = document.getElementById('reflection2').value;
         const reflection3 = document.getElementById('reflection3').value;
         const confidence = document.getElementById('confidence').value;
-        
+
         if (!reflection1 || !reflection2 || !reflection3) {
             alert('Please complete all reflection prompts.');
             return;
         }
-        
+
         if (reflection1.length < 20 || reflection2.length < 20 || reflection3.length < 20) {
             alert('Please write at least 20 characters for each reflection.');
             return;
         }
-        
+
         const reflection = {
             whatWorked: reflection1,
             whatNext: reflection2,
@@ -313,14 +313,49 @@ const App = {
             confidence: parseInt(confidence),
             date: new Date().toISOString()
         };
-        
-        UserData.saveReflection(questId, reflection);
-        
-        const quest = QUESTS.find(q => q.id === questId);
-        UserData.addXP(quest.xp);
-        UserData.completeQuest(questId);
-        
-        alert('🎉 Reflection saved! Great job!');
+
+        // Get quest info to handle both standalone and multi-level quests
+        const questInfo = QuestHelper.getQuestInfo(questId);
+
+        if (!questInfo) {
+            alert('Quest not found.');
+            return;
+        }
+
+        if (questInfo.isLevel) {
+            // For multi-level quests
+            const parentQuest = questInfo.parentQuest;
+
+            // Save reflection for the parent quest
+            UserData.saveReflection(parentQuest.id, reflection);
+
+            // Award XP for all levels (only if not already awarded)
+            const user = UserData.get();
+            if (!user.completedQuests.includes(parentQuest.id)) {
+                // Calculate total XP from all levels
+                const totalXP = parentQuest.levels.reduce((sum, level) => sum + level.xp, 0);
+                UserData.addXP(totalXP);
+
+                // Mark parent quest as complete
+                UserData.completeQuest(parentQuest.id);
+
+                alert(`🎉 Reflection saved! You earned ${totalXP} XP for completing all levels!`);
+            } else {
+                alert('🎉 Reflection saved! Great job!');
+            }
+        } else {
+            // For standalone quests
+            UserData.saveReflection(questId, reflection);
+
+            const user = UserData.get();
+            if (!user.completedQuests.includes(questId)) {
+                UserData.addXP(questInfo.quest.xp);
+                UserData.completeQuest(questId);
+            }
+
+            alert('🎉 Reflection saved! Great job!');
+        }
+
         this.navigate('dashboard');
     },
     
