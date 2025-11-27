@@ -2,9 +2,24 @@
 const Activities = {
     currentQuest: null,
     currentAnswer: null,
-    
+
     init(questId) {
+        // First try to find the quest in the main QUESTS array
         this.currentQuest = QUESTS.find(q => q.id === questId);
+
+        // If not found, search within levels of parent quests
+        if (!this.currentQuest) {
+            for (const parentQuest of QUESTS) {
+                if (parentQuest.levels) {
+                    const level = parentQuest.levels.find(l => l.id === questId);
+                    if (level) {
+                        this.currentQuest = level;
+                        break;
+                    }
+                }
+            }
+        }
+
         if (!this.currentQuest) return;
         
         const container = document.getElementById('activityContent');
@@ -795,7 +810,24 @@ const Activities = {
     },
     
     submit(questId) {
-        const quest = QUESTS.find(q => q.id === questId);
+        // First try to find the quest in the main QUESTS array
+        let quest = QUESTS.find(q => q.id === questId);
+
+        // If not found, search within levels of parent quests
+        if (!quest) {
+            for (const parentQuest of QUESTS) {
+                if (parentQuest.levels) {
+                    const level = parentQuest.levels.find(l => l.id === questId);
+                    if (level) {
+                        quest = level;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!quest) return;
+
         let isCorrect = false;
         
         switch (quest.activityType) {

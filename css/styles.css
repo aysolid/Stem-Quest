@@ -2614,3 +2614,210 @@ button[disabled]:hover {
     background: #9ca3af;
     transform: none;
 }
+
+/* Level Selection Screen */
+.level-selection-screen {
+    background: linear-gradient(135deg, #f0fdfa 0%, #dbeafe 100%);
+}
+
+.level-selection-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.level-selection-header .quest-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 2rem;
+    color: var(--gray-900);
+    margin-bottom: 12px;
+}
+
+.level-selection-header .quest-icon {
+    font-size: 2.5rem;
+}
+
+.level-selection-header .quest-description {
+    font-size: 1.1rem;
+    color: var(--gray-600);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.level-selection-subtitle {
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--gray-700);
+    margin: 30px 0 24px 0;
+    font-weight: 600;
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+}
+
+.level-card {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.level-card:hover:not(.locked) {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--teal-500);
+}
+
+.level-card.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+}
+
+.level-card.completed {
+    border: 2px solid #22c55e;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(255, 255, 255, 0.95));
+}
+
+.level-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.difficulty-icon {
+    font-size: 1.8rem;
+}
+
+.difficulty-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.level-title {
+    font-size: 1.3rem;
+    color: var(--gray-900);
+    margin-bottom: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.level-description {
+    color: var(--gray-600);
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+    line-height: 1.6;
+    min-height: 48px;
+}
+
+.level-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.level-meta .meta-badge {
+    background: var(--gray-100);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+.level-play-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--teal-600), var(--teal-500));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+
+.level-play-btn:hover:not([disabled]) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(13, 148, 136, 0.3);
+}
+
+.level-play-btn[disabled] {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+.level-card .lock-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.level-card .completed-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    left: auto;
+}
+
+.level-card .prerequisite-text {
+    background: #fef3c7;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #92400e;
+    margin: 12px 0;
+    font-weight: 500;
+}
+
+/* Responsive adjustments for level selection */
+@media (max-width: 768px) {
+    .levels-grid {
+        grid-template-columns: 1fr;
+        padding: 0 16px 40px;
+    }
+
+    .level-selection-header .quest-title {
+        font-size: 1.5rem;
+    }
+
+    .level-selection-header .quest-icon {
+        font-size: 2rem;
+    }
+
+    .level-selection-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .level-title {
+        font-size: 1.1rem;
+    }
+}
