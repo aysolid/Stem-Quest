@@ -590,6 +590,9 @@ const Screens = {
         return `
             <div class="screen quest-play">
                 <div class="quest-header-bar">
+                    <button class="btn-back-quest" onclick="App.navigate('dashboard')" title="Return to Dashboard">
+                        ← Back to Home
+                    </button>
                     <h2>${quest.title}</h2>
                     <button class="btn btn-secondary" onclick="App.showHints('${questId}')">💡 Hints</button>
                     <div class="progress-bar">
