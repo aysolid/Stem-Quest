@@ -409,12 +409,17 @@ const Activities = {
 
         if (questInfo.isLevel) {
             // This is a level in a multi-level quest
-            // First, mark this level as completed
-            UserData.completeQuest(this.currentQuest.id);
+            // First, mark this level as completed and award XP
+            const user = UserData.get();
+            if (!user.completedQuests.includes(this.currentQuest.id)) {
+                UserData.addXP(this.currentQuest.xp);
+                UserData.completeQuest(this.currentQuest.id);
+            }
 
             if (questInfo.nextLevel) {
                 // There's a next level - show congratulations and prompt to continue
                 const message = `🎉 Excellent work! You completed ${questInfo.quest.title}!\n\n` +
+                    `You earned ${this.currentQuest.xp} XP!\n` +
                     `You've finished level ${questInfo.levelIndex + 1} of ${questInfo.totalLevels}.\n\n` +
                     `Ready for the next challenge: ${questInfo.nextLevel.title}?`;
 
@@ -427,14 +432,20 @@ const Activities = {
                 }
             } else {
                 // This was the last level - go to reflection
-                alert('🎉 Excellent work! You completed the final level!');
+                alert(`🎉 Excellent work! You completed the final level and earned ${this.currentQuest.xp} XP!`);
                 setTimeout(() => {
                     App.navigate('reflection', this.currentQuest.id);
                 }, 500);
             }
         } else {
-            // This is a standalone quest - go straight to reflection
-            alert('🎉 Excellent work! You solved it!');
+            // This is a standalone quest - award XP and go to reflection
+            const user = UserData.get();
+            if (!user.completedQuests.includes(this.currentQuest.id)) {
+                UserData.addXP(this.currentQuest.xp);
+                UserData.completeQuest(this.currentQuest.id);
+            }
+
+            alert(`🎉 Excellent work! You solved it and earned ${this.currentQuest.xp} XP!`);
             setTimeout(() => {
                 App.navigate('reflection', this.currentQuest.id);
             }, 500);
