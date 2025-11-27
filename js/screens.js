@@ -62,7 +62,7 @@ const Screens = {
                 <div class="quest-preview-section">
                     <h3 class="section-title">Ready to Begin? Choose Your First Quest</h3>
                     <div class="quest-preview-scroll">
-                        <div class="quest-preview-card" onclick="App.navigate('questDetail', 'robot-navigator-beginner')">
+                        <div class="quest-preview-card" onclick="App.navigate('questDetail', 'robot-navigator')">
                             <div class="preview-icon">🤖</div>
                             <h4>Robot Navigator</h4>
                             <p>Guide the robot to safety</p>
@@ -416,9 +416,90 @@ const Screens = {
         `;
     },
 
+    levelSelection(questId) {
+        const quest = QUESTS.find(q => q.id === questId);
+        if (!quest || !quest.levels) return '<div class="screen"><p>Quest not found</p></div>';
+
+        const user = UserData.get();
+
+        return `
+            <div class="screen level-selection-screen">
+                <button class="btn btn-secondary mb-4" onclick="App.navigate('dashboard')">
+                    ← Back to Dashboard
+                </button>
+
+                <div class="level-selection-header">
+                    <h2 class="quest-title">
+                        <span class="quest-icon">🤖</span>
+                        ${quest.title}
+                    </h2>
+                    <p class="quest-description">${quest.description}</p>
+                </div>
+
+                <h3 class="level-selection-subtitle">Choose Your Difficulty Level:</h3>
+
+                <div class="levels-grid">
+                    ${quest.levels.map((level, index) => {
+                        const isUnlocked = !level.prerequisites || level.prerequisites.length === 0 ||
+                                         level.prerequisites.every(prereqId => user.completedQuests.includes(prereqId));
+                        const isCompleted = user.completedQuests.includes(level.id);
+
+                        const difficultyIcons = {
+                            'beginner': '🟢',
+                            'intermediate': '🟡',
+                            'expert': '🔴'
+                        };
+
+                        const difficultyColors = {
+                            'beginner': '#10b981',
+                            'intermediate': '#f59e0b',
+                            'expert': '#ef4444'
+                        };
+
+                        return `
+                            <div class="level-card ${!isUnlocked ? 'locked' : ''} ${isCompleted ? 'completed' : ''}"
+                                 onclick="${isUnlocked ? `App.navigate('questPlay', '${level.id}')` : 'return false;'}">
+                                ${!isUnlocked ? '<div class="lock-overlay">🔒</div>' : ''}
+                                ${isCompleted ? '<div class="completed-badge">✅ Completed</div>' : ''}
+
+                                <div class="level-header">
+                                    <span class="difficulty-icon">${difficultyIcons[level.difficulty] || '⚪'}</span>
+                                    <span class="difficulty-badge" style="background: ${difficultyColors[level.difficulty] || '#6b7280'}20; color: ${difficultyColors[level.difficulty] || '#6b7280'}">
+                                        ${level.difficulty.toUpperCase()}
+                                    </span>
+                                </div>
+
+                                <h4 class="level-title">${level.title}</h4>
+                                <p class="level-description">${level.description}</p>
+
+                                ${!isUnlocked && level.prerequisites && level.prerequisites.length > 0 ? `
+                                    <p class="prerequisite-text">🔒 Complete ${level.prerequisites[0].replace('robot-navigator-', '')} level first</p>
+                                ` : ''}
+
+                                <div class="level-meta">
+                                    <span class="meta-badge">⏱️ ${level.time} min</span>
+                                    <span class="meta-badge">⭐ ${level.xp} XP</span>
+                                </div>
+
+                                <button class="level-play-btn" ${!isUnlocked ? 'disabled' : ''}>
+                                    ${!isUnlocked ? '🔒 Locked' : isCompleted ? 'Play Again →' : 'Start Level →'}
+                                </button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    },
+
     questDetail(questId) {
         const quest = QUESTS.find(q => q.id === questId);
         if (!quest) return '<div class="screen"><p>Quest not found</p></div>';
+
+        // If quest has levels, show level selection instead
+        if (quest.levels && quest.levels.length > 0) {
+            return this.levelSelection(questId);
+        }
 
         const isUnlocked = this.isQuestUnlocked(quest);
         const isCompleted = UserData.get().completedQuests.includes(quest.id);
@@ -471,10 +552,26 @@ const Screens = {
     },
 
     questPlay(questId) {
-        const quest = QUESTS.find(q => q.id === questId);
+        // First try to find the quest in the main QUESTS array
+        let quest = QUESTS.find(q => q.id === questId);
+
+        // If not found, search within levels of parent quests
+        if (!quest) {
+            for (const parentQuest of QUESTS) {
+                if (parentQuest.levels) {
+                    const level = parentQuest.levels.find(l => l.id === questId);
+                    if (level) {
+                        quest = level;
+                        break;
+                    }
+                }
+            }
+        }
+
         if (!quest) return '<div class="screen"><p>Quest not found</p></div>';
 
-        const isUnlocked = this.isQuestUnlocked(quest);
+        const isUnlocked = !quest.prerequisites || quest.prerequisites.length === 0 ||
+                          quest.prerequisites.every(prereqId => UserData.get().completedQuests.includes(prereqId));
 
         if (!isUnlocked) {
             return `
