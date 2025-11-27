@@ -1,5 +1,23 @@
 // Screen Renderer
 const Screens = {
+    // Helper function to check if a quest is unlocked
+    isQuestUnlocked(quest) {
+        if (!quest.prerequisites || quest.prerequisites.length === 0) {
+            return true;
+        }
+
+        const user = UserData.get();
+        return quest.prerequisites.every(prereqId =>
+            user.completedQuests.includes(prereqId)
+        );
+    },
+
+    // Helper function to get prerequisite quest title
+    getPrerequisiteTitle(questId) {
+        const prereq = QUESTS.find(q => q.id === questId);
+        return prereq ? prereq.title : 'Unknown Quest';
+    },
+
     welcome() {
         return `
             <div class="screen welcome-screen">
@@ -44,7 +62,7 @@ const Screens = {
                 <div class="quest-preview-section">
                     <h3 class="section-title">Ready to Begin? Choose Your First Quest</h3>
                     <div class="quest-preview-scroll">
-                        <div class="quest-preview-card" onclick="App.navigate('questDetail', 'robot-navigator')">
+                        <div class="quest-preview-card" onclick="App.navigate('questDetail', 'robot-navigator-beginner')">
                             <div class="preview-icon">🤖</div>
                             <h4>Robot Navigator</h4>
                             <p>Guide the robot to safety</p>
@@ -301,12 +319,22 @@ const Screens = {
                     </div>
 
                     <div class="quest-cards-grid">
-                        ${QUESTS.map(quest => `
-                            <div class="quest-selection-card" onclick="App.navigate('questDetail', '${quest.id}')">
+                        ${QUESTS.map(quest => {
+                            const isUnlocked = this.isQuestUnlocked(quest);
+                            const isCompleted = UserData.get().completedQuests.includes(quest.id);
+
+                            return `
+                            <div class="quest-selection-card ${!isUnlocked ? 'locked' : ''} ${isCompleted ? 'completed' : ''}"
+                                 onclick="${isUnlocked ? `App.navigate('questDetail', '${quest.id}')` : 'return false;'}">
                                 <div class="quest-card-icon">${quest.category === 'algorithm' ? '🤖' : quest.category === 'pattern' ? '🔍' : '📚'}</div>
+                                ${!isUnlocked ? '<div class="lock-overlay">🔒</div>' : ''}
+                                ${isCompleted ? '<div class="completed-badge">✅ Completed</div>' : ''}
                                 <div class="quest-card-content">
                                     <h3 class="quest-card-title">${quest.title}</h3>
                                     <p class="quest-card-description">${quest.description}</p>
+                                    ${!isUnlocked && quest.prerequisites.length > 0 ? `
+                                        <p class="prerequisite-text">🔒 Complete "${this.getPrerequisiteTitle(quest.prerequisites[0])}" first</p>
+                                    ` : ''}
                                     <div class="quest-card-meta">
                                         <span class="meta-badge">⏱️ ${quest.time} min</span>
                                         <span class="meta-badge">⭐ ${quest.xp} XP</span>
@@ -314,11 +342,12 @@ const Screens = {
                                     </div>
                                     <span class="quest-card-category category-${quest.category}">${quest.category}</span>
                                 </div>
-                                <button class="quest-card-btn">
-                                    Start Quest →
+                                <button class="quest-card-btn" ${!isUnlocked ? 'disabled' : ''}>
+                                    ${!isUnlocked ? '🔒 Locked' : isCompleted ? 'Play Again →' : 'Start Quest →'}
                                 </button>
                             </div>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </div>
                 </div>
             </div>
@@ -327,7 +356,8 @@ const Screens = {
 
     dashboard() {
         const user = UserData.get();
-        const featuredQuest = QUESTS[0];
+        // Find the first unlocked quest as the featured quest
+        const featuredQuest = QUESTS.find(q => this.isQuestUnlocked(q)) || QUESTS[0];
         
         return `
             <div class="screen dashboard">
@@ -389,31 +419,52 @@ const Screens = {
     questDetail(questId) {
         const quest = QUESTS.find(q => q.id === questId);
         if (!quest) return '<div class="screen"><p>Quest not found</p></div>';
-        
+
+        const isUnlocked = this.isQuestUnlocked(quest);
+        const isCompleted = UserData.get().completedQuests.includes(quest.id);
+
         return `
             <div class="screen">
                 <button class="btn btn-secondary mb-4" onclick="App.navigate('dashboard')">
                     ← Back to Dashboard
                 </button>
-                
-                <div class="quest-card">
+
+                <div class="quest-card ${!isUnlocked ? 'locked' : ''}">
                     <div class="quest-header">
-                        <h2 class="quest-title">${quest.title}</h2>
+                        <h2 class="quest-title">
+                            ${!isUnlocked ? '🔒 ' : ''}${quest.title}
+                            ${isCompleted ? ' ✅' : ''}
+                        </h2>
                         <span class="quest-category category-${quest.category}">${quest.category}</span>
                     </div>
-                    
+
                     <div class="quest-meta mb-4">
                         <span>⏱️ ${quest.time} min</span>
                         <span>⭐ ${quest.xp} XP</span>
                         <span>📊 ${quest.difficulty}</span>
                     </div>
-                    
-                    <h3>📜 Mission Briefing</h3>
-                    <p>${quest.scenario}</p>
-                    
-                    <button class="btn btn-primary mt-8" onclick="App.navigate('questPlay', '${quest.id}')">
-                        Start Quest →
-                    </button>
+
+                    ${!isUnlocked && quest.prerequisites.length > 0 ? `
+                        <div class="prerequisite-warning">
+                            <h3>🔒 Quest Locked</h3>
+                            <p>You must complete the following quest first:</p>
+                            <ul>
+                                ${quest.prerequisites.map(prereqId => `
+                                    <li><strong>${this.getPrerequisiteTitle(prereqId)}</strong></li>
+                                `).join('')}
+                            </ul>
+                            <button class="btn btn-secondary mt-4" onclick="App.navigate('questMap')">
+                                View Quest Map
+                            </button>
+                        </div>
+                    ` : `
+                        <h3>📜 Mission Briefing</h3>
+                        <p>${quest.scenario}</p>
+
+                        <button class="btn btn-primary mt-8" onclick="App.navigate('questPlay', '${quest.id}')">
+                            ${isCompleted ? 'Play Again →' : 'Start Quest →'}
+                        </button>
+                    `}
                 </div>
             </div>
         `;
@@ -422,7 +473,23 @@ const Screens = {
     questPlay(questId) {
         const quest = QUESTS.find(q => q.id === questId);
         if (!quest) return '<div class="screen"><p>Quest not found</p></div>';
-        
+
+        const isUnlocked = this.isQuestUnlocked(quest);
+
+        if (!isUnlocked) {
+            return `
+                <div class="screen">
+                    <div class="quest-card locked">
+                        <h2>🔒 Quest Locked</h2>
+                        <p>You cannot access this quest yet. Please complete the prerequisite quests first.</p>
+                        <button class="btn btn-primary mt-4" onclick="App.navigate('questMap')">
+                            Back to Quest Map
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
         return `
             <div class="screen quest-play">
                 <div class="quest-header-bar">
@@ -432,12 +499,12 @@ const Screens = {
                         <div class="progress-fill" id="questProgress" style="width: 0%"></div>
                     </div>
                 </div>
-                
+
                 <div class="activity-container">
                     <div class="challenge-text">${quest.scenario}</div>
                     <div id="activityContent"></div>
                 </div>
-                
+
                 <button class="btn btn-primary" id="submitBtn" onclick="Activities.submit('${questId}')">
                     Submit Solution
                 </button>
@@ -587,20 +654,32 @@ const Screens = {
         return `
             <div class="screen">
                 <h2 class="mb-4">Quest Map 🗺️</h2>
-                ${QUESTS.map(quest => `
-                    <div class="quest-card" onclick="App.navigate('questDetail', '${quest.id}')">
+                ${QUESTS.map(quest => {
+                    const isUnlocked = this.isQuestUnlocked(quest);
+                    const isCompleted = UserData.get().completedQuests.includes(quest.id);
+
+                    return `
+                    <div class="quest-card ${!isUnlocked ? 'locked' : ''} ${isCompleted ? 'completed' : ''}"
+                         onclick="${isUnlocked ? `App.navigate('questDetail', '${quest.id}')` : 'return false;'}">
                         <div class="quest-header">
-                            <h3 class="quest-title">${quest.title}</h3>
+                            <h3 class="quest-title">
+                                ${!isUnlocked ? '🔒 ' : ''}${quest.title}
+                                ${isCompleted ? ' ✅' : ''}
+                            </h3>
                             <span class="quest-category category-${quest.category}">${quest.category}</span>
                         </div>
                         <p class="quest-description">${quest.description}</p>
+                        ${!isUnlocked && quest.prerequisites.length > 0 ? `
+                            <p class="prerequisite-text">🔒 Complete "${this.getPrerequisiteTitle(quest.prerequisites[0])}" first</p>
+                        ` : ''}
                         <div class="quest-meta">
                             <span>⏱️ ${quest.time} min</span>
                             <span>⭐ ${quest.xp} XP</span>
                             <span>📊 ${quest.difficulty}</span>
                         </div>
                     </div>
-                `).join('')}
+                `;
+                }).join('')}
             </div>
         `;
     },
