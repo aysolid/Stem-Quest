@@ -88,29 +88,29 @@ const QUESTS = [
                         { x: 1, y: 0 },
                         { x: 2, y: 0 },
                         { x: 3, y: 0 },
-                        { x: 0, y: 1 },
-                        { x: 2, y: 1 },
+                        { x: 3, y: 1 },
                         { x: 4, y: 1 },
-                        { x: 5, y: 1 },
+                        { x: 0, y: 2 },
                         { x: 1, y: 2 },
-                        { x: 3, y: 2 },
-                        { x: 5, y: 2 },
+                        { x: 4, y: 2 },
+                        { x: 1, y: 3 },
                         { x: 2, y: 3 },
-                        { x: 4, y: 3 },
+                        { x: 5, y: 3 },
                         { x: 0, y: 4 },
                         { x: 2, y: 4 },
-                        { x: 4, y: 4 },
+                        { x: 3, y: 4 },
                         { x: 6, y: 4 },
                         { x: 1, y: 5 },
-                        { x: 3, y: 5 },
-                        { x: 5, y: 5 }
+                        { x: 2, y: 5 },
+                        { x: 4, y: 5 },
+                        { x: 5, y: 6 }
                     ],
-                    solution: ['down', 'down', 'right', 'down', 'right', 'down', 'right', 'down', 'right', 'right', 'down', 'right']
+                    solution: ['down', 'right', 'right', 'down', 'right', 'down', 'right', 'down', 'right', 'down', 'right', 'down']
                 },
                 hints: [
                     'This is a complex maze! Look for open pathways and plan your route carefully.',
-                    'Start by moving down twice, then alternate between moving right and down to weave through the debris.',
-                    'The path requires careful navigation - look for the zigzag pattern through the obstacles.'
+                    'Start by moving down once, then navigate through the zigzag pattern in the debris field.',
+                    'The path requires careful navigation - alternate between moving right and down to weave through the obstacles.'
                 ]
             }
         ]

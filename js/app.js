@@ -329,30 +329,16 @@ const App = {
             // Save reflection for the parent quest
             UserData.saveReflection(parentQuest.id, reflection);
 
-            // Award XP for all levels (only if not already awarded)
+            // Mark parent quest as complete (XP was already awarded per level)
             const user = UserData.get();
             if (!user.completedQuests.includes(parentQuest.id)) {
-                // Calculate total XP from all levels
-                const totalXP = parentQuest.levels.reduce((sum, level) => sum + level.xp, 0);
-                UserData.addXP(totalXP);
-
-                // Mark parent quest as complete
                 UserData.completeQuest(parentQuest.id);
-
-                alert(`🎉 Reflection saved! You earned ${totalXP} XP for completing all levels!`);
-            } else {
-                alert('🎉 Reflection saved! Great job!');
             }
+
+            alert('🎉 Reflection saved! Great job completing all levels!');
         } else {
-            // For standalone quests
+            // For standalone quests - reflection is saved but XP was already awarded
             UserData.saveReflection(questId, reflection);
-
-            const user = UserData.get();
-            if (!user.completedQuests.includes(questId)) {
-                UserData.addXP(questInfo.quest.xp);
-                UserData.completeQuest(questId);
-            }
-
             alert('🎉 Reflection saved! Great job!');
         }
 
