@@ -611,6 +611,7 @@ const Activities = {
         const { categories, items } = this.currentQuest.activity;
         this.currentAnswer = {};
         this.originalItemOrder = [...items];
+        this.originalItemsState = items.map((item, i) => ({index: i, name: item.name, category: item.category, icon: item.icon}));
 
         let html = `
             <div class="data-sorter-container">
@@ -618,12 +619,27 @@ const Activities = {
                 <p class="quest-instruction">Drag each item to its correct category. Items can be moved between categories!</p>
 
                 <div class="sorter-controls">
-                    <button class="btn-shuffle" onclick="Activities.shuffleItems()">
-                        <span>🔀</span> Shuffle Items
+                    <button class="btn-shuffle" onclick="Activities.resetItems()">
+                        <span>🔄</span> Reset Items
                     </button>
                 </div>
 
-                <div class="categories-container">
+                <div class="sorter-layout">
+                    <div class="sorter-items-section">
+                        <h3 class="quest-section-title">📦 Items to Sort</h3>
+                        <div class="items-grid" id="itemsGrid">
+                            ${items.map((item, i) => `
+                                <div class="sortable-item" draggable="true" data-item="${i}" data-name="${item.name}" data-category="${item.category}">
+                                    <span class="item-icon">${item.icon || '📄'}</span>
+                                    <span class="item-name">${item.name}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="sorter-categories-section">
+                        <h3 class="quest-section-title">📂 Categories</h3>
+                        <div class="categories-container">
         `;
 
         categories.forEach(cat => {
@@ -645,16 +661,8 @@ const Activities = {
         });
 
         html += `
-                </div>
-
-                <h3 class="quest-section-title mt-8">📦 Items to Sort</h3>
-                <div class="items-grid" id="itemsGrid">
-                    ${items.map((item, i) => `
-                        <div class="sortable-item" draggable="true" data-item="${i}" data-name="${item.name}" data-category="${item.category}">
-                            <span class="item-icon">${item.icon || '📄'}</span>
-                            <span class="item-name">${item.name}</span>
                         </div>
-                    `).join('')}
+                    </div>
                 </div>
             </div>
         `;
@@ -788,25 +796,45 @@ const Activities = {
         });
     },
 
-    shuffleItems() {
+    resetItems() {
         const itemsGrid = document.getElementById('itemsGrid');
-        const items = Array.from(itemsGrid.querySelectorAll('.sortable-item'));
 
-        // Fisher-Yates shuffle
-        for (let i = items.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [items[i], items[j]] = [items[j], items[i]];
-        }
+        // Remove all items from categories and reset answer
+        this.currentAnswer = {};
 
-        // Clear and re-append in new order
+        // Get all sortable items from anywhere in the document
+        const allItems = document.querySelectorAll('.sortable-item');
+        allItems.forEach(item => {
+            const removeBtn = item.querySelector('.item-remove');
+            if (removeBtn) removeBtn.remove();
+            item.classList.remove('placed-item');
+        });
+
+        // Clear items grid and repopulate with original items
         itemsGrid.innerHTML = '';
-        items.forEach(item => itemsGrid.appendChild(item));
+        this.originalItemsState.forEach((itemData) => {
+            const existingItem = document.querySelector(`[data-item="${itemData.index}"]`);
+            if (existingItem) {
+                itemsGrid.appendChild(existingItem);
+            }
+        });
 
-        // Add shuffle animation
+        // Update placeholders
+        this.updateDropZonePlaceholders();
+
+        // Update progress
+        document.getElementById('questProgress').style.width = '25%';
+
+        // Add reset animation
         itemsGrid.style.animation = 'shuffle 0.5s ease';
         setTimeout(() => {
             itemsGrid.style.animation = '';
         }, 500);
+    },
+
+    shuffleItems() {
+        // Keep for backward compatibility, but redirect to resetItems
+        this.resetItems();
     },
     
     submit(questId) {
