@@ -8,6 +8,7 @@
 }
 
 :root {
+    /* Vibrant Game Colors */
     --teal-600: #0d9488;
     --teal-500: #14b8a6;
     --teal-100: #ccfbf1;
@@ -27,8 +28,23 @@
     --gray-100: #f3f4f6;
     --gray-50: #f9fafb;
     --purple-500: #a78bfa;
+    --purple-600: #9333ea;
     --green-500: #22c55e;
+    --green-600: #16a34a;
     --orange-500: #fb923c;
+    --pink-500: #ec4899;
+    --sky-400: #38bdf8;
+    --sky-500: #0ea5e9;
+
+    /* Game-specific colors */
+    --game-gold: #fbbf24;
+    --game-silver: #e2e8f0;
+    --game-bronze: #d97706;
+    --game-grass: #4ade80;
+    --game-sky-light: #bae6fd;
+    --game-sky-dark: #0c4a6e;
+    --game-mountain: #64748b;
+    --game-tree: #15803d;
 }
 
 /* Import Lexend font for dyslexia-friendliness */
@@ -36,11 +52,55 @@
 
 body {
     font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: var(--gray-50);
+    background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 40%, #7CB342 70%, #558B2F 100%);
     color: var(--gray-900);
     line-height: 1.8;
     font-size: 16px;
     overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Game World Background - Clouds */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 300px;
+    background:
+        radial-gradient(ellipse 150px 80px at 20% 120px, rgba(255,255,255,0.9) 0%, transparent 100%),
+        radial-gradient(ellipse 200px 100px at 60% 80px, rgba(255,255,255,0.85) 0%, transparent 100%),
+        radial-gradient(ellipse 180px 90px at 85% 140px, rgba(255,255,255,0.8) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+    animation: clouds 60s ease-in-out infinite;
+}
+
+/* Mountains in background */
+body::after {
+    content: '';
+    position: fixed;
+    bottom: 80px;
+    left: 0;
+    right: 0;
+    height: 250px;
+    background:
+        linear-gradient(to bottom, transparent 0%, transparent 20%,
+        var(--game-mountain) 20%, #475569 50%, #334155 100%);
+    clip-path: polygon(
+        0% 100%, 0% 60%, 10% 50%, 20% 55%, 30% 40%, 40% 45%,
+        50% 30%, 60% 40%, 70% 35%, 80% 50%, 90% 45%, 100% 60%, 100% 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+}
+
+@keyframes clouds {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(30px); }
 }
 
 #app {
@@ -53,6 +113,8 @@ body {
     min-height: 100vh;
     padding: 20px;
     animation: fadeIn 0.3s ease-in;
+    position: relative;
+    z-index: 1;
 }
 
 @keyframes fadeIn {
@@ -68,52 +130,90 @@ body {
     align-items: center;
     justify-content: flex-start;
     min-height: 100vh;
-    background: linear-gradient(135deg, #f0fdfa 0%, #dbeafe 50%, #fef3c7 100%);
+    background:
+        /* Sky gradient */
+        linear-gradient(180deg,
+            #87CEEB 0%,
+            #93D8F5 30%,
+            #B4E7F8 60%,
+            #FFA07A 90%,
+            #FF8C69 100%);
     text-align: center;
     padding: 40px 20px;
     overflow: hidden;
 }
 
-/* Background Floating Shapes */
+/* Welcome screen ground layer */
+.welcome-screen::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(180deg, var(--game-grass) 0%, #15803d 100%);
+    z-index: 0;
+    border-top: 5px solid #22c55e;
+}
+
+/* Welcome screen decorative trees */
+.welcome-screen::after {
+    content: '🌳';
+    position: absolute;
+    bottom: 150px;
+    font-size: 80px;
+    left: 10%;
+    z-index: 1;
+    animation: float 6s ease-in-out infinite;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+}
+
+/* Background Floating Shapes - Enhanced as particles */
 .bg-shapes {
     position: absolute;
     inset: 0;
     overflow: hidden;
-    opacity: 0.3;
+    opacity: 0.4;
     z-index: 0;
     pointer-events: none;
 }
 
 .bg-shape {
     position: absolute;
-    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-    background: linear-gradient(45deg, var(--teal-500), var(--blue-500));
-    opacity: 0.15;
-    animation: float 8s ease-in-out infinite;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    opacity: 0.6;
+    animation: float 8s ease-in-out infinite, sparkle 3s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255,255,255,0.5);
 }
 
 .bg-shape:nth-child(1) {
-    width: 300px;
-    height: 300px;
-    top: 10%;
-    left: -5%;
+    width: 120px;
+    height: 120px;
+    top: 15%;
+    left: 5%;
     animation-delay: 0s;
 }
 
 .bg-shape:nth-child(2) {
-    width: 200px;
-    height: 200px;
-    top: 60%;
-    right: -5%;
+    width: 80px;
+    height: 80px;
+    top: 50%;
+    right: 10%;
     animation-delay: 2s;
 }
 
 .bg-shape:nth-child(3) {
-    width: 250px;
-    height: 250px;
-    bottom: 10%;
-    left: 30%;
+    width: 100px;
+    height: 100px;
+    bottom: 30%;
+    left: 40%;
     animation-delay: 4s;
+}
+
+@keyframes sparkle {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
 }
 
 /* Hero Scene */
@@ -306,30 +406,45 @@ body {
 }
 
 .btn-quest-start {
-    background: linear-gradient(135deg, var(--teal-500) 0%, var(--blue-500) 100%);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.2) 0%, transparent 100%),
+        linear-gradient(135deg, var(--teal-500) 0%, var(--blue-600) 50%, var(--purple-600) 100%);
     color: white;
-    padding: 18px 40px;
-    border-radius: 16px;
-    font-size: 1.25rem;
-    font-weight: 600;
-    border: none;
+    padding: 20px 45px;
+    border-radius: 18px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border: 3px solid rgba(255,255,255,0.3);
     box-shadow:
-        0 4px 20px rgba(13, 148, 136, 0.4),
-        0 0 40px rgba(59, 130, 246, 0.2);
+        0 8px 25px rgba(13, 148, 136, 0.5),
+        0 4px 15px rgba(59, 130, 246, 0.4),
+        0 0 50px rgba(59, 130, 246, 0.3),
+        inset 0 2px 0 rgba(255,255,255,0.3),
+        inset 0 -2px 5px rgba(0,0,0,0.2);
     position: relative;
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
 }
 
 .btn-quest-start:hover {
-    transform: translateY(-4px) scale(1.05);
+    transform: translateY(-6px) scale(1.08);
     box-shadow:
-        0 8px 30px rgba(13, 148, 136, 0.5),
-        0 0 60px rgba(59, 130, 246, 0.3);
+        0 15px 40px rgba(13, 148, 136, 0.6),
+        0 8px 25px rgba(59, 130, 246, 0.5),
+        0 0 80px rgba(59, 130, 246, 0.5),
+        inset 0 2px 0 rgba(255,255,255,0.4),
+        inset 0 -2px 5px rgba(0,0,0,0.2);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.btn-quest-start:active {
+    transform: translateY(-2px) scale(1.05);
 }
 
 .btn-quest-start::before {
@@ -339,8 +454,26 @@ body {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.4), transparent);
     animation: shimmerButton 3s infinite;
+}
+
+.btn-quest-start::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255,255,255,0.3) 50%,
+        transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn-quest-start:hover::after {
+    opacity: 1;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 .btn-avatar-create {
@@ -448,20 +581,48 @@ body {
 
 .quest-preview-card {
     min-width: 240px;
-    background: white;
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
     padding: 24px;
-    border-radius: 16px;
+    border-radius: 20px;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow:
+        0 10px 25px rgba(0,0,0,0.15),
+        0 4px 10px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.8);
     cursor: pointer;
     transition: all 0.3s ease;
     scroll-snap-align: center;
     flex-shrink: 0;
+    border: 3px solid rgba(255,255,255,0.9);
+    position: relative;
+    overflow: visible;
+}
+
+.quest-preview-card::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: linear-gradient(135deg, var(--teal-500), var(--blue-500), var(--purple-500));
+    border-radius: 20px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quest-preview-card:hover::before {
+    opacity: 1;
 }
 
 .quest-preview-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(13, 148, 136, 0.2);
+    transform: translateY(-12px) scale(1.05);
+    box-shadow:
+        0 20px 40px rgba(0,0,0,0.25),
+        0 10px 20px rgba(13, 148, 136, 0.3),
+        inset 0 1px 0 rgba(255,255,255,1),
+        0 0 30px rgba(59, 130, 246, 0.4);
 }
 
 .quest-preview-card.preview-locked {
@@ -940,7 +1101,36 @@ body {
 .quest-selection-screen {
     min-height: 100vh;
     padding: 0;
-    background: linear-gradient(135deg, #f0fdfa 0%, #dbeafe 50%, #fef3c7 100%);
+    background:
+        linear-gradient(180deg,
+            #87CEEB 0%,
+            #93D8F5 30%,
+            #B4E7F8 60%,
+            var(--game-grass) 85%,
+            #15803d 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.quest-selection-screen::before {
+    content: '☁️';
+    position: fixed;
+    top: 80px;
+    right: 15%;
+    font-size: 120px;
+    opacity: 0.6;
+    animation: clouds 40s ease-in-out infinite;
+    z-index: 0;
+}
+
+.quest-selection-screen::after {
+    content: '🌲';
+    position: fixed;
+    bottom: 100px;
+    right: 8%;
+    font-size: 100px;
+    z-index: 0;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
 }
 
 .quest-selection-content {
@@ -976,38 +1166,66 @@ body {
 }
 
 .quest-selection-card {
-    background: white;
-    border-radius: 20px;
-    padding: 28px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 100%);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.12),
+        0 4px 12px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.9);
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     gap: 16px;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
+    border: 4px solid rgba(255,255,255,0.95);
 }
 
 .quest-selection-card::before {
     content: '';
     position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    background: linear-gradient(135deg, var(--teal-500) 0%, var(--blue-500) 50%, var(--purple-500) 100%);
+    border-radius: 24px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quest-selection-card::after {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 5px;
-    background: linear-gradient(135deg, var(--teal-500) 0%, var(--blue-500) 100%);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.quest-selection-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 32px rgba(13, 148, 136, 0.2);
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(59, 130, 246, 0.03));
+    border-radius: 24px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .quest-selection-card:hover::before {
-    transform: scaleX(1);
+    opacity: 1;
+}
+
+.quest-selection-card:hover::after {
+    opacity: 1;
+}
+
+.quest-selection-card:hover {
+    transform: translateY(-12px) scale(1.03);
+    box-shadow:
+        0 20px 50px rgba(0,0,0,0.2),
+        0 10px 25px rgba(13, 148, 136, 0.3),
+        inset 0 1px 0 rgba(255,255,255,1),
+        0 0 40px rgba(59, 130, 246, 0.4);
 }
 
 .quest-card-icon {
@@ -1106,44 +1324,118 @@ body {
 }
 
 .stat-card {
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9)),
+        linear-gradient(135deg, var(--teal-50) 0%, var(--blue-50) 100%);
+    padding: 24px;
+    border-radius: 18px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.12),
+        0 3px 8px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+    border: 3px solid rgba(255,255,255,0.9);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(20, 184, 166, 0.1), transparent);
+    animation: shimmerButton 4s infinite;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 12px 30px rgba(0,0,0,0.15),
+        0 5px 12px rgba(13, 148, 136, 0.2),
+        inset 0 1px 0 rgba(255,255,255,1);
 }
 
 .stat-value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--teal-600);
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--teal-600) 0%, var(--blue-600) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 10px rgba(13, 148, 136, 0.2);
+    filter: drop-shadow(0 0 8px rgba(13, 148, 136, 0.3));
 }
 
 .stat-label {
-    font-size: 0.9rem;
-    color: var(--gray-600);
-    margin-top: 4px;
+    font-size: 0.95rem;
+    color: var(--gray-700);
+    margin-top: 8px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Quest Cards */
 .quest-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.12),
+        0 3px 8px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.9);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    border: 3px solid rgba(255,255,255,0.95);
+    position: relative;
+    overflow: visible;
+}
+
+.quest-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(59, 130, 246, 0.05));
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quest-card:hover::before {
+    opacity: 1;
 }
 
 .quest-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+        0 15px 35px rgba(0,0,0,0.2),
+        0 8px 15px rgba(13, 148, 136, 0.25),
+        inset 0 1px 0 rgba(255,255,255,1),
+        0 0 25px rgba(59, 130, 246, 0.3);
 }
 
 .quest-card.featured {
-    background: linear-gradient(135deg, var(--teal-50) 0%, var(--blue-100) 100%);
-    border: 2px solid var(--teal-200);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.95), rgba(204,251,241,0.8)),
+        linear-gradient(135deg, var(--teal-50) 0%, var(--blue-100) 100%);
+    border: 3px solid var(--teal-400);
+    box-shadow:
+        0 10px 30px rgba(13, 148, 136, 0.3),
+        0 5px 15px rgba(0,0,0,0.1),
+        inset 0 1px 0 rgba(255,255,255,1),
+        0 0 40px rgba(20, 184, 166, 0.2);
 }
 
 .quest-header {
@@ -1247,25 +1539,68 @@ body {
 
 .progress-bar {
     width: 100%;
-    height: 8px;
-    background: var(--gray-200);
-    border-radius: 4px;
+    height: 14px;
+    background:
+        linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 50%, transparent 100%),
+        var(--gray-200);
+    border-radius: 10px;
     overflow: hidden;
     margin-top: 12px;
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.2),
+        0 1px 0 rgba(255,255,255,0.8);
+    border: 2px solid rgba(0,0,0,0.1);
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--teal-600) 0%, var(--blue-600) 100%);
-    transition: width 0.3s ease;
+    background:
+        linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.1) 100%),
+        linear-gradient(90deg, var(--teal-600) 0%, var(--blue-600) 50%, var(--purple-600) 100%);
+    transition: width 0.5s ease;
+    border-radius: 8px;
+    box-shadow:
+        0 0 10px rgba(59, 130, 246, 0.6),
+        inset 0 1px 0 rgba(255,255,255,0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shimmerButton 2s infinite;
 }
 
 .activity-container {
-    background: white;
-    padding: 24px;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 100%);
+    padding: 32px;
+    border-radius: 24px;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.12),
+        0 4px 12px rgba(0,0,0,0.08),
+        inset 0 2px 0 rgba(255,255,255,0.9);
     margin-bottom: 24px;
+    border: 4px solid rgba(255,255,255,0.95);
+    position: relative;
+    overflow: hidden;
+}
+
+.activity-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.02), rgba(59, 130, 246, 0.02));
+    pointer-events: none;
 }
 
 .challenge-text {
@@ -1310,35 +1645,59 @@ body {
 
 .robot-grid {
     display: grid;
-    gap: 6px;
-    background: var(--gray-300);
-    padding: 8px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    gap: 8px;
+    background:
+        linear-gradient(145deg, #475569 0%, #334155 100%);
+    padding: 12px;
+    border-radius: 16px;
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.3),
+        inset 0 2px 4px rgba(0,0,0,0.4);
+    border: 3px solid rgba(71, 85, 105, 0.8);
 }
 
 .grid-cell {
     aspect-ratio: 1;
-    min-width: 50px;
-    background: white;
-    border-radius: 8px;
+    min-width: 55px;
+    background:
+        linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     position: relative;
     transition: all 0.3s ease;
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+    border: 2px solid rgba(255,255,255,0.9);
+}
+
+.grid-cell:hover {
+    transform: scale(1.05);
 }
 
 .grid-cell.obstacle {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.2) 0%, transparent 100%),
+        linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow:
+        inset 0 3px 10px rgba(0,0,0,0.3),
+        0 4px 12px rgba(239, 68, 68, 0.4);
+    border: 2px solid rgba(220, 38, 38, 0.5);
 }
 
 .grid-cell.goal {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+    background:
+        radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%),
+        linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, var(--game-gold) 100%);
+    box-shadow:
+        0 0 30px rgba(251, 191, 36, 0.8),
+        0 4px 15px rgba(251, 191, 36, 0.5),
+        inset 0 2px 0 rgba(255,255,255,0.6);
     animation: glowGoal 2s ease-in-out infinite;
+    border: 3px solid var(--game-gold);
 }
 
 @keyframes glowGoal {
@@ -1371,21 +1730,43 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 20px 24px;
-    background: white;
-    border: 3px solid var(--blue-500);
-    border-radius: 16px;
+    gap: 10px;
+    padding: 24px 28px;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(219,234,254,0.9) 100%);
+    border: 4px solid var(--blue-500);
+    border-radius: 20px;
     cursor: grab;
     user-select: none;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-    min-width: 120px;
+    box-shadow:
+        0 8px 20px rgba(59, 130, 246, 0.3),
+        0 3px 8px rgba(0,0,0,0.1),
+        inset 0 2px 0 rgba(255,255,255,0.8);
+    min-width: 140px;
+}
+
+.command-block-modern::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent);
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.command-block-modern:hover::before {
+    opacity: 1;
 }
 
 .command-block-modern:hover {
-    transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    transform: translateY(-6px) scale(1.08);
+    box-shadow:
+        0 12px 30px rgba(59, 130, 246, 0.4),
+        0 5px 15px rgba(0,0,0,0.15),
+        inset 0 2px 0 rgba(255,255,255,1),
+        0 0 25px rgba(59, 130, 246, 0.5);
     border-color: var(--teal-500);
 }
 
@@ -2090,21 +2471,65 @@ body {
 
 .celebration {
     text-align: center;
-    padding: 32px;
-    background: linear-gradient(135deg, var(--teal-50) 0%, var(--blue-100) 100%);
-    border-radius: 16px;
+    padding: 40px;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(251, 191, 36, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+        linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(204,251,241,0.9) 50%, rgba(219,234,254,0.9) 100%);
+    border-radius: 24px;
     margin-bottom: 32px;
+    box-shadow:
+        0 15px 40px rgba(0,0,0,0.15),
+        0 5px 15px rgba(251, 191, 36, 0.3),
+        inset 0 2px 0 rgba(255,255,255,0.9);
+    border: 4px solid rgba(251, 191, 36, 0.5);
+    position: relative;
+    overflow: hidden;
+    animation: successPulse 2s ease-in-out infinite;
+}
+
+.celebration::before {
+    content: '🎉';
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 60px;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+.celebration::after {
+    content: '✨';
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 60px;
+    animation: sparkle 2s ease-in-out infinite;
 }
 
 .celebration h2 {
-    font-size: 2rem;
-    margin-bottom: 16px;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--game-gold) 0%, var(--orange-500) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+    text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);
+    position: relative;
+    z-index: 1;
 }
 
 .xp-earned {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--teal-600);
+    font-size: 3.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--teal-600) 0%, var(--blue-600) 50%, var(--purple-600) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6));
+    position: relative;
+    z-index: 1;
+    animation: pulse 1.5s ease-in-out infinite;
 }
 
 .reflection-prompt {
@@ -2217,13 +2642,19 @@ input[type="range"] {
     bottom: 0;
     left: 0;
     right: 0;
-    background: white;
-    border-top: 1px solid var(--gray-200);
+    background:
+        linear-gradient(to top, rgba(255,255,255,0.98), rgba(248,250,252,0.95)),
+        linear-gradient(135deg, var(--teal-50) 0%, var(--blue-50) 100%);
+    border-top: 3px solid rgba(20, 184, 166, 0.3);
     display: flex;
     justify-content: space-around;
-    padding: 8px 0;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+    padding: 10px 0;
+    box-shadow:
+        0 -5px 20px rgba(0,0,0,0.12),
+        0 -2px 8px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.9);
     z-index: 100;
+    backdrop-filter: blur(10px);
 }
 
 .bottom-nav.hidden {
@@ -2236,25 +2667,62 @@ input[type="range"] {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: 8px;
+    padding: 10px 8px;
     background: none;
     border: none;
     color: var(--gray-600);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    position: relative;
+    border-radius: 12px;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--teal-100), var(--blue-100));
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.nav-item:hover::before {
+    opacity: 0.5;
+}
+
+.nav-item.active::before {
+    opacity: 1;
 }
 
 .nav-item.active {
     color: var(--teal-600);
+    transform: translateY(-4px);
+}
+
+.nav-item.active .nav-icon {
+    filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.6));
+    animation: bounce 2s ease-in-out infinite;
 }
 
 .nav-icon {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.nav-item:hover .nav-icon {
+    transform: scale(1.15);
 }
 
 .nav-label {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Utilities */
@@ -2729,19 +3197,45 @@ button[disabled]:hover {
 
 .level-card {
     position: relative;
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 100%);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.12),
+        0 4px 10px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255,255,255,0.9);
     transition: all 0.3s ease;
     cursor: pointer;
-    border: 2px solid transparent;
+    border: 4px solid rgba(255,255,255,0.95);
+    overflow: visible;
+}
+
+.level-card::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    background: linear-gradient(135deg, var(--teal-500), var(--blue-500), var(--purple-500));
+    border-radius: 24px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.level-card:hover:not(.locked)::before {
+    opacity: 1;
 }
 
 .level-card:hover:not(.locked) {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    border-color: var(--teal-500);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.2),
+        0 8px 20px rgba(13, 148, 136, 0.25),
+        inset 0 1px 0 rgba(255,255,255,1),
+        0 0 30px rgba(59, 130, 246, 0.4);
 }
 
 .level-card.locked {
